@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ホーム - びじゅありん</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div style="width: 80px;"></div>
+            <div>家事可視化アプリ びじゅありん</div>
+            <a href="1_login.html" style="width: 80px; text-align: right;">ログアウト</a>
+        </header>
+        
+        <div class="content">
+            <div class="dashboard-grid">
+                
+                <div class="dashboard-col">
+                    <h2 class="col-title title-task">今日の家事タスク</h2>
+                    
+                    <div class="card-task">
+                        <div class="card-title">お風呂掃除</div>
+                        <div class="card-meta">期限: 本日分 (3日おき)</div>
+                        <p style="font-size:0.9em; color:#40342B; margin: 0 0 18px 0; line-height:1.7 dashed #D6CDC4; padding-bottom:10px; border-bottom:1px dashed #D6CDC4;">
+                            排水溝のゴミも捨てること。カビキラーは月1回。
+                        </p>
+                        <div class="flex-between">
+                            <button class="btn btn-secondary" style="padding:6px 12px; font-size:0.85em;" onclick="openPanel('panelTaskDetail')">詳細を見る</button>
+                            <button class="btn" style="padding:6px 15px; font-size:0.85em;" onclick="showToast('タスクを完了として記録しました')">完了する</button>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-secondary" style="margin-top:20px;" onclick="openPanel('panelTaskRegister')">タスクを新規登録</button>
+                </div>
+                
+                <div class="dashboard-col">
+                    <h2 class="col-title title-item">消耗品アラート <span class="badge">1</span></h2>
+                    
+                    <div class="card-item-alert">
+                        <div class="card-title">トイレットペーパー</div>
+                        <div class="card-meta text-alert">残量目安を下回っています</div>
+                        <div class="flex-between" style="margin-top:20px;">
+                            <button class="btn btn-secondary" style="padding:6px 12px; font-size:0.85em;" onclick="openPanel('panelItemDetail')">詳細・変更</button>
+                            <button class="btn" style="background-color: #6E5447; padding:6px 15px; font-size:0.85em; border-color:#40342B;" onclick="showToast('購入を記録し、サイクルをリセットしました')">購入完了</button>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-secondary" style="margin-top:20px;" onclick="openPanel('panelItemRegister')">消耗品を新規登録</button>
+                </div>
+                
+                <div class="dashboard-col" style="padding: 0; border: none; background: transparent; box-shadow: none;">
+                    <div class="chat-container">
+                        <div class="chat-header">
+                            <span>AI アシスト</span>
+                            <button class="chat-new-btn" onclick="clearChat()">新規チャット</button>
+                        </div>
+                        
+                        <div class="chat-messages" id="chatArea">
+                            <div class="chat-bubble chat-ai">
+                                アシスタントAIです。分解したい大まかな作業名や、家事に関するお悩みを入力してください。
+                            </div>
+                        </div>
+                        
+                        <div class="chat-input-area">
+                            <input type="text" id="aiInput" placeholder="入力例：車内の清掃、衣替え" onkeypress="handleEnter(event)">
+                            <button class="btn" onclick="sendMessage()">送信</button>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+
+        <div id="panelTaskRegister" class="floating-panel" style="top: 15%; left: 10%;">
+            <div class="panel-header"><span>タスク新規登録</span><span class="panel-close" onclick="closePanel('panelTaskRegister')">×</span></div>
+            <div class="panel-content">
+                <div class="form-group"><label>家事の名前</label><input type="text" placeholder="例：ゴミ出し"></div>
+                <div class="form-group"><label>カテゴリ</label><select><option>水回り</option><option>キッチン</option></select></div>
+                <div class="form-group"><label>次回予定日</label><input type="date"></div>
+                <div class="form-group"><label>繰り返し間隔 (日)</label><input type="number" placeholder="7"></div>
+                <button class="btn" onclick="saveAndClose('panelTaskRegister', '新しいタスクを登録しました')">登録を確定</button>
+            </div>
+        </div>
+
+        <div id="panelTaskDetail" class="floating-panel" style="top: 20%; left: 30%;">
+            <div class="panel-header"><span>タスク詳細</span><span class="panel-close" onclick="closePanel('panelTaskDetail')">×</span></div>
+            <div class="panel-content">
+                <h3 style="margin-top:0; margin-bottom:10px; color:#2B221A;">お風呂掃除</h3>
+                <span class="tag">水回り</span>
+                <p style="margin: 0 0 8px 0; font-size:0.95em;"><strong>次回予定日：</strong> 2026/07/03</p>
+                <p style="margin: 0 0 8px 0; font-size:0.95em;"><strong>繰り返し：</strong> 3日おき</p>
+                <p style="margin: 0 0 20px 0; font-size:0.95em; color:#6E6055; line-height:1.6;">排水溝のゴミも捨てること。カビキラーは月1回。</p>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-secondary" style="margin:0;" onclick="openPanel('panelTaskEdit')">情報を編集</button>
+                    <button class="btn btn-secondary btn-alert" style="margin:0;" onclick="saveAndClose('panelTaskDetail', 'タスクを削除しました')">削除</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="panelTaskEdit" class="floating-panel" style="top: 25%; left: 35%;">
+            <div class="panel-header"><span>タスク編集</span><span class="panel-close" onclick="closePanel('panelTaskEdit')">×</span></div>
+            <div class="panel-content">
+                <div class="form-group"><label>家事の名前</label><input type="text" value="お風呂掃除"></div>
+                <div class="form-group"><label>次回予定日</label><input type="date" value="2026-07-03"></div>
+                <div class="form-group"><label>繰り返し間隔 (日)</label><input type="number" value="3"></div>
+                <button class="btn" onclick="saveAndClose('panelTaskEdit', 'タスクの変更を保存しました')">変更を保存</button>
+            </div>
+        </div>
+
+        <div id="panelItemRegister" class="floating-panel" style="top: 15%; left: 50%;">
+            <div class="panel-header"><span>消耗品新規登録</span><span class="panel-close" onclick="closePanel('panelItemRegister')">×</span></div>
+            <div class="panel-content">
+                <div class="form-group"><label>消耗品の名前</label><input type="text" placeholder="例：食器用洗剤"></div>
+                <div class="form-group"><label>現在の残量</label><input type="number" value="1"></div>
+                <div class="form-group"><label>アラート基準値</label><input type="number" value="1"></div>
+                <button class="btn" onclick="saveAndClose('panelItemRegister', '消耗品を新しく登録しました')">登録を確定</button>
+            </div>
+        </div>
+
+        <div id="panelItemDetail" class="floating-panel" style="top: 20%; left: 45%;">
+            <div class="panel-header"><span>消耗品詳細</span><span class="panel-close" onclick="closePanel('panelItemDetail')">×</span></div>
+            <div class="panel-content">
+                <h3 style="margin-top:0; margin-bottom:10px; color:#2B221A;">トイレットペーパー</h3>
+                <span class="tag" style="background-color:#FAF5F2; color:#9E4A34; border:1px solid #9E4A34;">ストック僅少</span>
+                <p style="margin: 0 0 8px 0; font-size:0.95em;"><strong>現在の残量：</strong> 1 パック</p>
+                <p style="margin: 0 0 8px 0; font-size:0.95em;"><strong>アラート目安：</strong> 2 パック以下</p>
+                <div style="display: flex; gap: 10px; margin-top:25px;">
+                    <button class="btn btn-secondary" style="margin:0; flex: 1;" onclick="openPanel('panelItemEdit')">情報を編集</button>
+                    <button class="btn" style="margin:0; flex: 1; background-color: #6E5447; border-color:#40342B;" onclick="saveAndClose('panelItemDetail', '購入を記録しました')">購入完了</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="panelItemEdit" class="floating-panel" style="top: 25%; left: 40%;">
+            <div class="panel-header"><span>消耗品編集</span><span class="panel-close" onclick="closePanel('panelItemEdit')">×</span></div>
+            <div class="panel-content">
+                <div class="form-group"><label>消耗品の名前</label><input type="text" value="トイレットペーパー"></div>
+                <div class="form-group"><label>現在の残量</label><input type="number" value="1"></div>
+                <div class="form-group"><label>アラート基準値</label><input type="number" value="2"></div>
+                <button class="btn" onclick="saveAndClose('panelItemEdit', '消耗品の情報を更新しました')">変更を保存</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <script>
+        function showToast(msg) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast-msg';
+            toast.innerText = msg;
+            container.appendChild(toast);
+            setTimeout(() => { toast.remove(); }, 3000);
+        }
+
+        let highestZIndex = 1000;
+
+        function openPanel(id) {
+            const panel = document.getElementById(id);
+            panel.style.display = 'block';
+            bringToFront(panel);
+        }
+        
+        function closePanel(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+        
+        function saveAndClose(id, msg) {
+            closePanel(id);
+            showToast(msg);
+        }
+
+        function bringToFront(element) {
+            highestZIndex++;
+            element.style.zIndex = highestZIndex;
+        }
+
+        // ドラッグ機能
+        document.querySelectorAll('.floating-panel').forEach(panel => {
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            const header = panel.querySelector('.panel-header');
+            panel.onmousedown = () => bringToFront(panel);
+            if (header) header.onmousedown = dragMouseDown;
+
+            function dragMouseDown(e) {
+                e.preventDefault();
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                document.onmousemove = elementDrag;
+            }
+            function elementDrag(e) {
+                e.preventDefault();
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                panel.style.top = (panel.offsetTop - pos2) + "px";
+                panel.style.left = (panel.offsetLeft - pos1) + "px";
+            }
+            function closeDragElement() {
+                document.onmouseup = null;
+                document.onmousemove = null;
+            }
+        });
+
+        // チャット機能
+        function handleEnter(e) { if(e.key === 'Enter') sendMessage(); }
+
+        function sendMessage() {
+            const inputEl = document.getElementById('aiInput');
+            const text = inputEl.value.trim();
+            if(!text) return;
+
+            const chatArea = document.getElementById('chatArea');
+            const userBubble = document.createElement('div');
+            userBubble.className = 'chat-bubble chat-user';
+            userBubble.innerText = text;
+            chatArea.appendChild(userBubble);
+            inputEl.value = '';
+            chatArea.scrollTop = chatArea.scrollHeight;
+
+            setTimeout(() => {
+                const aiBubble = document.createElement('div');
+                aiBubble.className = 'chat-bubble chat-ai';
+                aiBubble.innerHTML = `
+                    「${text}」の細分化ですね。<br>以下の名もなき家事が見つかりました。<br><br>
+                    <div style="border:1px solid #D6CDC4; padding:10px; background:#FFFFFF; margin-bottom:5px;">
+                        1. ゴミ・砂の掃き出し<br>
+                        <button class="btn btn-secondary" style="padding:4px 8px; font-size:0.8em; margin-top:5px;" onclick="openPanel('panelTaskRegister')">タスクに登録</button>
+                    </div>
+                `;
+                chatArea.appendChild(aiBubble);
+                chatArea.scrollTop = chatArea.scrollHeight;
+            }, 800);
+        }
+
+        function clearChat() {
+            const chatArea = document.getElementById('chatArea');
+            chatArea.innerHTML = `
+                <div class="chat-bubble chat-ai">
+                    新しいチャットを開始しました！どんな家事について相談しますか？
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

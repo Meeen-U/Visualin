@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>消耗品詳細 - びじゅありん</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="5_home.html" style="width: 50px;">＜ 戻る</a>
+            <div>消耗品詳細</div>
+            <a href="12_item_edit.html" style="width: 50px; text-align:right;">変更</a>
+        </header>
+        <div class="content">
+            <h2 style="margin-bottom: 5px;">トイレットペーパー</h2>
+            <span style="display:inline-block; background:#ffeaa7; color:#d63031; padding:4px 10px; border-radius:12px; font-size:0.8em; font-weight:bold; margin-bottom:20px;">⚠️ ストック切れアラート中</span>
+            
+            <div style="background:#fafafa; border: 1px solid #ddd; padding: 15px; border-radius: 8px; line-height: 1.8;">
+                <p style="margin: 0 0 10px 0;"><strong>現在の残量：</strong> <span style="font-size: 1.3em; color:#e74c3c; font-weight:bold;">1</span> パック</p>
+                <p style="margin: 0 0 10px 0;"><strong>アラートを出す目安：</strong> 2 パック以下</p>
+                <p style="margin: 0 0 10px 0;"><strong>購入サイクル：</strong> 14 日ごと</p>
+                <p style="margin: 0;"><strong>カテゴリ：</strong> トイレ用品</p>
+            </div>
+
+            <div style="margin-top: 30px; display: flex; gap: 10px;">
+                <button class="btn btn-secondary" style="margin:0; flex: 1;" onclick="alert('残量を1減らしました。')">➖ 1つ使う</button>
+                <button class="btn" style="margin:0; flex: 1; background-color: #2ecc71;" onclick="alert('購入を記録し、サイクルをリセットしました。')">🛒 購入完了</button>
+            </div>
+            
+            <a href="5_home.html" class="btn btn-secondary" style="margin-top:30px; color: #e74c3c; border-color: #e74c3c; background: #fff;" onclick="return confirm('本当にこの消耗品を削除しますか？')">🗑 登録を削除する</a>
+        </div>
+    </div>
+</body>
+</html>

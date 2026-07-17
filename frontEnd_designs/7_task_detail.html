@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>タスク詳細 - びじゅありん</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="5_home.html" style="width: 50px;">＜ 戻る</a>
+            <div>タスク詳細</div>
+            <a href="8_task_edit.html" style="width: 50px; text-align:right;">編集</a>
+        </header>
+        <div class="content">
+            <h2 style="margin-bottom: 5px;">お風呂掃除</h2>
+            <span style="display:inline-block; background:#e0e0e0; color:#333; padding:4px 10px; border-radius:12px; font-size:0.8em; margin-bottom:20px;">水回り</span>
+            
+            <div style="background:#fafafa; border: 1px solid #ddd; padding: 15px; border-radius: 8px;">
+                <p style="margin: 0 0 10px 0;"><strong>次回予定日：</strong> 2026/07/03</p>
+                <p style="margin: 0 0 10px 0;"><strong>繰り返し：</strong> 3日おき</p>
+                <p style="margin: 0;"><strong>詳細メモ：</strong><br><span style="color:#555; display:inline-block; margin-top:5px;">排水溝のゴミも捨てること。カビキラーは月1回。</span></p>
+            </div>
+
+            <a href="5_home.html" class="btn" style="margin-top:30px; padding:15px; font-size:1.1em;">✅ 完了にする（履歴を記録）</a>
+            
+            <a href="5_home.html" class="btn btn-secondary" style="margin-top:15px; color: #e74c3c; border-color: #e74c3c; background: #fff;" onclick="return confirm('本当にこのタスクを削除しますか？')">🗑 削除する</a>
+        </div>
+    </div>
+</body>
+</html>

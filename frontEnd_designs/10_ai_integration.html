@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 家事細分化 - びじゅありん</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header style="background-color: #8e44ad;">
+            <a href="5_home.html" style="width: 50px;">＜ 戻る</a>
+            <div>AI 家事細分化</div>
+            <div style="width: 50px;"></div>
+        </header>
+        <div class="content">
+            <p style="font-size:0.9em; color:#555; line-height:1.5;">大まかな家事の名前を入力すると、AIが具体的な「名前のない家事」に分解して提案します。</p>
+            <div class="form-group" style="margin-top: 15px;">
+                <label>家事の名前</label>
+                <input type="text" placeholder="例：車内の清掃">
+            </div>
+            <button class="btn" style="background-color: #8e44ad; margin-bottom: 25px;">🪄 分割依頼（AIに聞く）</button>
+
+            <div style="border-top: 2px dashed #ddd; padding-top: 20px;">
+                <h3 style="font-size:1em; margin-bottom:15px; color:#333;">✨ AIからの提案結果</h3>
+                
+                <div class="card">
+                    <div class="card-title" style="font-size: 1.05em;">ウォッシャー液の残量確認</div>
+                    <div class="card-meta">推奨頻度: 30日</div>
+                    <a href="6_task_register.html" class="btn btn-secondary" style="padding:8px; font-size:0.9em; margin-top:5px;">＋ このタスクを登録</a>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title" style="font-size: 1.05em;">フロアマットの砂落とし</div>
+                    <div class="card-meta">推奨頻度: 14日</div>
+                    <a href="6_task_register.html" class="btn btn-secondary" style="padding:8px; font-size:0.9em; margin-top:5px;">＋ このタスクを登録</a>
+                </div>
+
+                <div class="card">
+                    <div class="card-title" style="font-size: 1.05em;">ダッシュボードの拭き掃除</div>
+                    <div class="card-meta">推奨頻度: 14日</div>
+                    <a href="6_task_register.html" class="btn btn-secondary" style="padding:8px; font-size:0.9em; margin-top:5px;">＋ このタスクを登録</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
