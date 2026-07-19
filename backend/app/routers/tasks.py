@@ -27,7 +27,8 @@ def _to_task_response(task: Task) -> TaskResponse:
         title=task.title,
         description=task.description,
         frequency_days=task.frequency_days,
-        is_completed=task.next_due_date,
+        is_completed=task.is_completed,
+        next_due_date=task.next_due_date,
         category=task.category,
     )
 
@@ -88,8 +89,8 @@ def update_task(
     """タスク内容を更新する"""
     task = _get_owned_task(task_id, current_user, db)
 
-    update_date = task_in.models_dump(exclude_unset=True)
-    for key, value in update_date.items():
+    update_data = task_in.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
         setattr(task, key, value)
 
     db.commit()

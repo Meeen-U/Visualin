@@ -76,7 +76,7 @@ def _get_owned_item(item_id: int, current_user: User, db: Session) -> Item:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="消耗品が見つかりません")
     if item.user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="この消耗品への操作は許可されていません")
-    
+    return item
 
 @router.put("/{item_id}", response_model=ItemUpdateResponse)
 def update_item(
@@ -138,7 +138,7 @@ def consume_item(
         item_id=item.id,
         action_type="consume",
         quantity_changed=-quantity,
-        excuted_at=datetime.now(),
+        executed_at=datetime.now(),
     )
     db.add(history)
     db.commit()

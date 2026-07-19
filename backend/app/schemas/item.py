@@ -50,6 +50,11 @@ class ItemUpdateResponse(BaseModel):
 
 
 class ItemDeleteResponse(BaseModel):
+    message: str
+
+
+class ItemHistoryResponse(BaseModel):
+    """消耗品の操作履歴のレスポンス"""
     id: int
     action_type: str
     quantity_changed: int

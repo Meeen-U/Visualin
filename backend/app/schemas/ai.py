@@ -16,7 +16,7 @@ class BreakdownResponse(BaseModel):
     subtasks: list[SubtaskItem]
 
 
-class PropopseRequest(BaseModel):
+class ProposeRequest(BaseModel):
     """家事の提案リクエスト"""
     season: str
     living_environment: str

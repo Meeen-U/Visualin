@@ -5,7 +5,7 @@ from passlib.context import CryptContext
 from jose import jwt, JWTError
 
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.user import User
@@ -50,12 +50,15 @@ def decode_access_token(token: str) -> dict | None:
         return None
     
 # クライアントが送るトークンを "Authorization: Bearer xxxx" の形式で受け取る設定
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+security_scheme = HTTPBearer()
 
 
 def get_current_user(
-        token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
+        credentials: HTTPAuthorizationCredentials = Depends(security_scheme),
+        db: Session = Depends(get_db)
 ) -> User:
+    token = credentials.credentials
+
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="認証情報が無効です",

@@ -6,7 +6,7 @@ class TaskCreate(BaseModel):
     """タスク新規登録時のリクエスト"""
     title: str
     description: Optional[str] = None
-    frequency_day: int
+    frequency_days: int
     next_due_date: Optional[date] = None
     category: Optional[str] = None
 
@@ -65,5 +65,5 @@ class TaskHistoryResponse(BaseModel):
 
 
 class TaskCompleteResponse(BaseModel):
-    messge: str
+    message: str
     task: TaskResponse
