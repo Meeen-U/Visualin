@@ -20,11 +20,11 @@ router = APIRouter(prefix="/api/ai", tags=["AI連携"])
 
 @router.post("/breakdown", response_model=BreakdownResponse)
 def breakdown_task(
-    request: BreakdownResponse,
+    request: BreakdownRequest,
     current_user: User = Depends(get_current_user),
 ):
     """
-    大まかな家事名から、具体的な「名前のない家事」のリストを生成する（ユースケース4-1）。
+    大まかな家事名から、具体的な「名前のない家事」のリストを生成する
     """
     prompt = f"""
 あなたは家事の専門家です。「{request.task_name}」という大まかな家事名から、
@@ -50,7 +50,7 @@ def breakdown_task(
 
 @router.post("/propose", response_model=ProposeResponse)
 def propose_tasks(
-    request: ProposeResponse,
+    request: ProposeRequest,
     current_user: User = Depends(get_current_user),
 ):
     """
