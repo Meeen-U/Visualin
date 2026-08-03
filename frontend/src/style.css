@@ -1,0 +1,225 @@
+/* =========================================
+   カスタムフォント（木漏れ日ゴシック）
+   ========================================= */
+@font-face {
+    font-family: 'KomorebiGothic';
+    src: url('./fonts/komorebi-gothic.ttf') format('truetype');
+}
+
+/* =========================================
+   ベーススタイル：無難な配色を捨て、深みと濁りのあるヴィンテージトーンへ
+   ========================================= */
+body {
+    font-family: 'KomorebiGothic', 'Yu Gothic', sans-serif;
+    background-color: #D1C9BF; /* 古いリネンのクロスのような、少し濁りのあるグレージュ */
+    margin: 0;
+    padding: 0;
+    color: #2B221A; /* 焦がしたコーヒー豆の深い黒茶 */
+    line-height: 1.0;
+}
+.container {
+    max-width: 1280px;
+    margin: 0 auto;
+    background-color: #E6E0D4; /* ワークデスクをイメージした木陰のトーン */
+    min-height: 100vh;
+    box-shadow: inset 0 0 100px rgba(43, 34, 26, 0.05), 0 0 30px rgba(0,0,0,0.1);
+    position: relative;
+    padding-bottom: 60px;
+}
+header {
+    background-color: #2B221A;
+    color: #ECE6D9;
+    padding: 20px 30px;
+    text-align: left;
+    font-size: 1.2em;
+    font-weight: bold;
+    letter-spacing: 3px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 4px solid #1A1410;
+}
+header a {
+    color: #A69485;
+    text-decoration: none;
+    font-size: 0.8em;
+    border-bottom: 1px dashed #A69485;
+    padding-bottom: 2px;
+}
+.content {
+    padding: 40px 30px;
+}
+
+/* =========================================
+   ★整列の破壊：ラフに広げられた3冊のルーズリーフ
+   ========================================= */
+.dashboard-grid {
+    display: flex;
+    gap: 35px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+/* 共通のノート基盤（かすれた罫線とマージン線） */
+.dashboard-col {
+    flex: 1;
+    min-width: 350px;
+    background-color: #FDFBF7; /* 経年変化で少し黄ばんだ紙の白 */
+    border: 1px solid #BFAFA3;
+    position: relative;
+    padding: 35px 20px 30px 60px;
+    box-sizing: border-box;
+    
+    /* 万年筆で引いたような、少し切ないブルーブラックの罫線とセピアのマージン線 */
+    background-image: 
+        linear-gradient(90deg, transparent 45px, #C28E85 45px, #C28E85 46px, transparent 46px),
+        linear-gradient(transparent 31px, rgba(122, 153, 158, 0.18) 31px, rgba(122, 153, 158, 0.18) 32px);
+    background-size: 100% 100%, 100% 32px;
+}
+
+/* 1冊目のノート：左に少し傾ける */
+.dashboard-grid > .dashboard-col:nth-child(1) {
+    transform: rotate(-1.2deg);
+    margin-top: 15px;
+    box-shadow: -5px 8px 20px rgba(43, 34, 26, 0.08);
+}
+/* 2冊目のノート：右に少し傾け、位置をずらす */
+.dashboard-grid > .dashboard-col:nth-child(2) {
+    transform: rotate(1deg);
+    margin-top: 5px;
+    box-shadow: 5px 10px 22px rgba(43, 34, 26, 0.09);
+}
+/* 3冊目のノート（AIチャット）：ごくわずかに傾け、下に落とす */
+.dashboard-grid > .dashboard-col:nth-child(3) {
+    transform: rotate(-0.5deg);
+    margin-top: 25px;
+    box-shadow: 2px 12px 25px rgba(43, 34, 26, 0.07);
+}
+
+/* 上綴じダブルリングのリアルな金属質感（穴の不均一な影） */
+.dashboard-col::before {
+    content: '';
+    position: absolute;
+    top: -24px;
+    left: 20px;
+    right: 20px;
+    height: 32px;
+    background-image: 
+        linear-gradient(to right, transparent 2px, #59524C 2px, #A69E97 5px, #59524C 7px, transparent 7px),
+        linear-gradient(to right, transparent 10px, #59524C 10px, #A69E97 11px, #59524C 13px, transparent 13px),
+        radial-gradient(circle at 4px 25px, #2B221A 3.5px, transparent 3.5px),
+        radial-gradient(circle at 12px 25px, #2B221A 3.5px, transparent 3.5px);
+    background-size: 26px 100%;
+    z-index: 10;
+}
+
+/* 手書きのような無骨なタイトルライン */
+.col-title {
+    font-size: 1.4em;
+    margin-top: 0;
+    margin-bottom: 28px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    line-height: 32px;
+}
+.title-task { color: #2B221A; border-bottom: 2px solid #2B221A; display: inline-block; padding-right: 15px; }
+.title-item { color: #9E4A34; border-bottom: 2px solid #9E4A34; display: inline-block; padding-right: 15px; }
+
+/* =========================================
+   ★デザインの本詰め：紙の重なりを感じるカード（付箋）
+   ========================================= */
+/* タスクカード：右下が浮き上がって影が斜めに流れるリアルな付箋 */
+.card-task {
+    background-color: #FFFDF0; /* 生なりの付箋紙 */
+    border: 1px solid #E3D4BC;
+    padding: 20px;
+    margin-bottom: 25px;
+    position: relative;
+    /* 複数の影をずらして重ねることで、右下の浮き上がりを表現 */
+    box-shadow: 2px 2px 5px rgba(43,34,26,0.04), 5px 10px 15px rgba(43,34,26,0.06);
+    transform: rotate(0.8deg); /* ノートに対してさらに少し傾ける */
+    margin-left: -5px;
+}
+/* 消耗品カード：ラフにちぎった厚紙のメモ */
+.card-item-alert {
+    background-color: #FFFFFF;
+    border: 1px solid #D6CDC4;
+    border-left: 6px solid #9E4A34; /* 濁りのある赤 */
+    padding: 20px;
+    margin-bottom: 25px;
+    box-shadow: 3px 5px 12px rgba(0, 0, 0, 0.04);
+    transform: rotate(-0.6deg);
+    margin-right: -5px;
+}
+
+.card-title { font-weight: bold; font-size: 1.15em; margin: 0 0 10px 0; color: #2B221A; letter-spacing: 0.5px; }
+.card-meta { font-size: 0.9em; color: #6E6055; margin: 0 0 15px 0; }
+
+/* =========================================
+   フォーム・ボタン：直線的で無骨な文房具のディテール
+   ========================================= */
+.form-group { margin-bottom: 18px; }
+label { display: block; margin-bottom: 6px; font-weight: bold; color: #40342B; font-size: 0.95em; }
+
+input[type="text"], input[type="number"], input[type="date"], select, textarea {
+    width: 100%; padding: 11px; border: 1px solid #A69A8F; border-radius: 0px; box-sizing: border-box; font-family: inherit;
+    background-color: #FAFAFD; color: #2B221A; font-size: 0.95em;
+}
+input:focus, select:focus, textarea:focus {
+    outline: none; border-color: #2B221A; background-color: #FFFFFF; box-shadow: 2px 2px 0px #2B221A;
+}
+/* ボタンも整然とした角丸を廃止し、スタンプを押したようなソリッドな四角に */
+.btn {
+    display: block; width: 100%; padding: 13px; background-color: #40342B; color: #FDFBF7; border: 1px solid #2B221A; border-radius: 0px; font-size: 1em; font-weight: bold; cursor: pointer; text-align: center; text-decoration: none; box-sizing: border-box; margin-top: 10px; font-family: inherit;
+}
+.btn:hover { background-color: #2B221A; }
+.btn-secondary { background-color: #EFECE6; color: #2B221A; border: 1px solid #A69A8F; }
+.btn-secondary:hover { background-color: #E2DDD5; }
+
+.flex-between { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.badge { background-color: #9E4A34; color: white; padding: 2px 7px; font-size: 0.75em; font-weight: bold; margin-left: 6px; }
+.tag { display: inline-block; background: #EBE6DC; color: #40342B; padding: 3px 10px; font-size: 0.8em; margin-bottom: 15px; border: 1px solid #D1C9BF; }
+
+/* =========================================
+   フローティングウィンドウ（手帳のインデックス、別紙の重ね合わせ）
+   ========================================= */
+.floating-panel {
+    display: none; position: fixed; background-color: #FFFFFF; width: 370px; border-radius: 0px; box-shadow: 10px 15px 35px rgba(43, 34, 26, 0.22); border: 2px solid #2B221A; z-index: 1000; overflow: hidden; animation: popIn 0.12s ease-out;
+}
+.panel-header {
+    background-color: #EFECE6; padding: 14px 20px; cursor: grab; font-weight: bold; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #2B221A; color: #2B221A; font-size: 0.95em;
+}
+.panel-header:active { cursor: grabbing; }
+.panel-close { cursor: pointer; font-size: 1.4em; color: #6E6055; }
+.panel-close:hover { color: #9E4A34; }
+.panel-content { padding: 22px; }
+
+@keyframes popIn { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
+
+/* =========================================
+   ★AIチャット（手帳のスクラップ置き場のような無骨な枠）
+   ========================================= */
+.chat-container { display: flex; flex-direction: column; height: 530px; border: 2px solid #40342B; background-color: #FFFFFF; margin-top: 15px; box-shadow: 4px 4px 0px rgba(64, 52, 43, 0.1); }
+.chat-header { background-color: #40342B; color: #FDFBF7; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 0.95em; }
+.chat-new-btn { background-color: transparent; border: 1px solid rgba(253,251,247,0.4); color: #FDFBF7; padding: 4px 14px; font-size: 0.8em; cursor: pointer; font-family: inherit; }
+.chat-new-btn:hover { background-color: rgba(253,251,247,0.1); border-color: #FDFBF7; }
+.chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 18px; background-color: #F5F2EB; }
+
+/* 完璧な丸みを排除。ちぎったメモ用紙を交互に並べたような配置 */
+.chat-bubble { max-width: 85%; padding: 14px 18px; border-radius: 0px; font-size: 0.95em; line-height: 1.6; word-break: break-all; box-shadow: 2px 2px 6px rgba(0,0,0,0.04); border: 1px solid #D6CDC4; }
+.chat-user { align-self: flex-end; background-color: #594C40; color: #FDFBF7; border: 1px solid #2B221A; }
+.chat-ai { align-self: flex-start; background-color: #FFFFFF; color: #2B221A; }
+
+.chat-input-area { display: flex; padding: 15px; background-color: #FFFFFF; border-top: 2px solid #40342B; gap: 12px; }
+.chat-input-area input { flex: 1; margin-bottom: 0; }
+.chat-input-area button { width: auto; margin-top: 0; background-color: #40342B; padding: 10px 24px; border: 1px solid #2B221A; }
+
+/* トースト通知 */
+#toast-container { position: fixed; bottom: 40px; right: 40px; z-index: 9999; display: flex; flex-direction: column; gap: 15px; pointer-events: none; }
+.toast-msg { background-color: #2B221A; color: #FDFBF7; padding: 15px 30px; border-radius: 0px; box-shadow: 5px 10px 25px rgba(0,0,0,0.15); font-size: 0.95em; opacity: 0; transform: translateY(20px); animation: showToast 0.25s forwards, hideToast 0.25s forwards 2.5s; font-family: inherit; border: 1px solid #1A1410; }
+@keyframes showToast { to { opacity: 1; transform: translateY(0); } }
+@keyframes hideToast { to { opacity: 0; transform: translateY(-10px); } }
+
+.text-alert { color: #9E4A34; font-weight: bold; }
+.btn-alert { color: #9E4A34; border-color: #9E4A34; background: #FFFFFF; }
+.btn-alert:hover { background-color: #FAF5F2; }
