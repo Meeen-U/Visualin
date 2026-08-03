@@ -40,3 +40,12 @@ class LoginResponse(BaseModel):
 class LogoutResponse(BaseModel):
     """ログアウト成功時のレスポンス"""
     message: str
+
+class PasswordResetRequest(BaseModel):
+    """パスワードリセットリクエスト時にクライアントから受け取るデータ"""
+    email: EmailStr
+    new_password: str
+
+class PasswordResetResponse(BaseModel):
+    """パスワードリセット成功時のレスポンス"""
+    message: str

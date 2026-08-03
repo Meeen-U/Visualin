@@ -10,7 +10,9 @@ from app.schemas.user import (
     UserResponse,
     RegisterResponse,
     LoginResponse,
-    LogoutResponse
+    LogoutResponse,
+    PasswordResetRequest,
+    PasswordResetResponse,
 )
 from app.security import hash_password, verify_password, create_access_token
 
@@ -71,3 +73,22 @@ def logout():
     クライアント側でトークンを破棄することで実質的なログアウトとする
     """
     return LogoutResponse(message="ログアウトしました")
+
+@router.post("/password-reset", response_model=PasswordResetResponse)
+def reset_password(request: PasswordResetRequest, db: Session = Depends(get_db)):
+    """
+    メールアドレスを指定してパスワードを新しく更新。
+    セキュリティ度返しの設計なので個人利用にとどめる
+    """
+    user = db.query(User).filter(User.email == request.email).first()
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_400_NOT_FOUND,
+            detail="このメールアドレスは登録されていません",
+        )
+
+    user.password_hash = hash_password(request.new_password)
+    db.commit()
+
+    return PasswordResetResponse(message="パスワードを再設定しました")
