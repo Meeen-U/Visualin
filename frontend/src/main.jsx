@@ -4,12 +4,15 @@ import { BrowserRouter } from 'react-router-dom'
 import './style.css'
 import App from './App.jsx'
 import { ToastProvider } from './contexts/ToastContext.jsx'
+import { ConfirmProvider } from './contexts/ConfirmContext.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <ToastProvider>
-        <App />
+        <ConfirmProvider>
+          <App />
+        </ConfirmProvider>
       </ToastProvider>
     </BrowserRouter>
   </StrictMode>,
