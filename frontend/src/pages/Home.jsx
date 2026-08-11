@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { apiGet, apiPost, clearToken } from '../api/client'
+import { apiGet, apiPost, apiDelete, clearToken } from '../api/client'
 import { useToast } from '../contexts/ToastContext'
 import TaskRegisterPanel from '../components/panels/TaskRegisterPanel'
+import TaskDetailPanel from '../components/panels/TaskDetailPanel'
 
 function Home() {
   const navigate = useNavigate()
@@ -41,6 +42,24 @@ function Home() {
   const alertItems = items.filter((item) => item.is_alert)
   const showToast = useToast()
   const [openPanel, setOpenPanel] = useState(null)
+  const [selectedTask, setSelectedTask] = useState(null)
+
+  function openTaskDetail(task) {
+    setSelectedTask(task)
+    setOpenPanel('taskDetail')
+  }
+
+  async function handleDeleteTask(taskId) {
+    if (!window.confirm('本当にこのタスクを削除しますか?')) return
+    try {
+      await apiDelete('/api/tasks/${taskId}')
+      showToast('タスクを削除しました')
+      closePanel()
+      loadDate()
+    } catch (err) {
+      showToast(err.message)
+    }
+  }
 
   function closePanel() {
     setOpenPanel(null)
@@ -109,6 +128,7 @@ function Home() {
                     <button
                       className="btn btn-secondary"
                       style={{ padding: '6px 12px', fontSize: '0.85em' }}
+                      onClick={() => openTaskDetail(task)}
                     >
                       詳細を見る
                     </button>
@@ -192,6 +212,14 @@ function Home() {
         isOpen={openPanel === 'taskRegister'}
         onClose={closePanel}
         onSubmit={handleCreateTask}
+      />
+
+      <TaskDetailPanel
+        isOpen={openPanel === 'taskDetail'}
+        onClose={closePanel}
+        task={selectedTask}
+        onEdit={() => setOpenPanel('taskEdit')}
+        onDelete={handleDeleteTask}
       />
     </div>
   )
