@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiGet, apiPost, apiDelete, clearToken } from '../api/client'
 import { useToast } from '../contexts/ToastContext'
+import { useConfirm } from '../contexts/ConfirmContext'
 import TaskRegisterPanel from '../components/panels/TaskRegisterPanel'
 import TaskDetailPanel from '../components/panels/TaskDetailPanel'
 
@@ -12,6 +13,7 @@ function Home() {
   const [items, setItems] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
+  const showConfirm = useConfirm()
 
   useEffect(() => {
     loadData()
@@ -45,17 +47,20 @@ function Home() {
   const [selectedTask, setSelectedTask] = useState(null)
 
   function openTaskDetail(task) {
+    console.log('clicked', task)
     setSelectedTask(task)
     setOpenPanel('taskDetail')
   }
 
   async function handleDeleteTask(taskId) {
-    if (!window.confirm('本当にこのタスクを削除しますか?')) return
+    const confirmed = await showConfirm('本当にこのタスクを削除しますか?')
+    if (!confirmed) return
+
     try {
-      await apiDelete('/api/tasks/${taskId}')
+      await apiDelete(`/api/tasks/${taskId}`)
       showToast('タスクを削除しました')
       closePanel()
-      loadDate()
+      loadData()
     } catch (err) {
       showToast(err.message)
     }

@@ -45,7 +45,7 @@ function FloatingPanel({
         const newLeft = rect.left + deltaX
         const newTop = rect.top + deltaY
 
-        setPosition({ top: '${newTop}px', left: '${newLeft}px'})
+        setPosition({ top: `${newTop}px`, left: `${newLeft}px`})
 
         dragState.current.startX = e.clientX
         dragState.current.startY = e.clientY
