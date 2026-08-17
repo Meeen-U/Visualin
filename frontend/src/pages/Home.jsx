@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { apiGet, apiPost, apiDelete, clearToken } from '../api/client'
+import { apiGet, apiPost, apiPut, apiDelete, clearToken } from '../api/client'
 import { useToast } from '../contexts/ToastContext'
 import { useConfirm } from '../contexts/ConfirmContext'
 import TaskRegisterPanel from '../components/panels/TaskRegisterPanel'
 import TaskDetailPanel from '../components/panels/TaskDetailPanel'
+import TaskEditPanel from '../components/panels/TaskEditPanel'
 
 function Home() {
   const navigate = useNavigate()
@@ -47,7 +48,6 @@ function Home() {
   const [selectedTask, setSelectedTask] = useState(null)
 
   function openTaskDetail(task) {
-    console.log('clicked', task)
     setSelectedTask(task)
     setOpenPanel('taskDetail')
   }
@@ -63,6 +63,17 @@ function Home() {
       loadData()
     } catch (err) {
       showToast(err.message)
+    }
+  }
+
+  async function handleUpdateTask(taskId, taskInput) {
+    try {
+      await apiPut(`/api/tasks/${taskId}`, taskInput)
+      showToast('タスクの内容を保存しました')
+      closePanel()
+      loadData()
+    } catch (err) {
+      showToast(err.massage)
     }
   }
 
@@ -225,6 +236,21 @@ function Home() {
         task={selectedTask}
         onEdit={() => setOpenPanel('taskEdit')}
         onDelete={handleDeleteTask}
+      />
+
+      <TaskDetailPanel
+        isOpen={openPanel === 'taskDetail'}
+        onClose={closePanel}
+        task={selectedTask}
+        onEdit={() => setOpenPanel('taskEdit')}
+        onDelete={handleDeleteTask}
+      />
+      
+      <TaskEditPanel
+        isOpen={openPanel === 'taskEdit'}
+        onClose={closePanel}
+        task={selectedTask}
+        onSubmit={handleUpdateTask}
       />
     </div>
   )
