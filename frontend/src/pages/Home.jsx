@@ -7,6 +7,8 @@ import TaskRegisterPanel from '../components/panels/TaskRegisterPanel'
 import TaskDetailPanel from '../components/panels/TaskDetailPanel'
 import TaskEditPanel from '../components/panels/TaskEditPanel'
 import ItemRegisterPanel from '../components/panels/ItemRegisterPanel'
+import ItemDetailPanel from '../components/panels/ItemDetailPanel'
+import ItemEditPanel from '../components/panels/ItemEditPanel'
 
 function Home() {
   const navigate = useNavigate()
@@ -43,14 +45,33 @@ function Home() {
     navigate('/login')
   }
 
-  const alertItems = items.filter((item) => item.is_alert)
+  // アラート中のものを上に、それ以外を下に並べ替えた一覧
+  const sortedItems = [...items].sort((a, b) => {
+    if (a.is_alert === b.is_alert) return 0
+    return a.is_alert ? -1 : 1
+  })
+  const alertCount = items.filter((item) => item.is_alert).length
   const showToast = useToast()
   const [openPanel, setOpenPanel] = useState(null)
   const [selectedTask, setSelectedTask] = useState(null)
+  const [selectedItem, setSelectedItem] = useState(null)
 
+
+  // Task関連関数
   function openTaskDetail(task) {
     setSelectedTask(task)
     setOpenPanel('taskDetail')
+  }
+
+  async function handleCreateTask(taskInput){
+    try {
+      await apiPost('/api/tasks', taskInput)
+      showToast('新しいタスクを登録しました')
+      closePanel()
+      loadData()
+    } catch (err) {
+      showToast(err.message)
+    }
   }
 
   async function handleDeleteTask(taskId) {
@@ -74,8 +95,15 @@ function Home() {
       closePanel()
       loadData()
     } catch (err) {
-      showToast(err.massage)
+      showToast(err.message)
     }
+  }
+
+
+  // Item関連関数
+  function openItemDetail(item) {
+    setSelectedItem(item)
+    setOpenPanel('itemDetail')
   }
 
   async function handleCreateItem(itemInput) {
@@ -89,19 +117,55 @@ function Home() {
     }
   }
 
-  function closePanel() {
-    setOpenPanel(null)
-  }
-
-  async function handleCreateTask(taskInput){
+  async function handleUpdateItem(itemId, itemInput) {
     try {
-      await apiPost('/api/tasks', taskInput)
-      showToast('新しいタスクを登録しました')
+      await apiPut(`/api/items/${itemId}`, itemInput)
+      showToast('消耗品情報を更新しました')
       closePanel()
       loadData()
     } catch (err) {
       showToast(err.message)
     }
+  }
+
+  async function handleDeleteItem(itemId) {
+    const confirmed = await showConfirm('ホウン等にこの消耗品を削除しますか？')
+    if (!confirmed) return
+    
+    try {
+      await apiDelete(`/api/items/${itemId}`)
+      showToast('消耗品を削除しました')
+      closePanel()
+      loadData()
+    } catch (err) {
+      showToast(err.message)
+    }
+  }
+
+  async function handleConsumeItem(itemId) {
+    try {
+      await apiPost(`/api/items/${itemId}/consume?quantity=1`)
+      showToast('残量を1減らしました')
+      closePanel()
+      loadData()
+    } catch (err) {
+      showToast(err.message)
+    }
+  }
+
+  async function handleRestockItem(itemId) {
+    try {
+      await apiPost(`/api/items/${itemId}/restock?restock_quantity=1`)
+      showToast('購入を記録し、残量を更新しました')
+      closePanel()
+      loadData()
+    } catch (err) {
+      showToast(err.message)
+    }
+  }
+
+  function closePanel() {
+    setOpenPanel(null)
   }
 
   return (
@@ -182,17 +246,25 @@ function Home() {
             {/* 消耗品列 */}
             <div className="dashboard-col">
               <h2 className="col-title title-item">
-                消耗品アラート <span className="badge">{alertItems.length}</span>
+                消耗品一覧 <span className="badge">{alertCount}</span>
               </h2>
 
-              {alertItems.map((item) => (
-                <div className="card-item-alert" key={item.item_id}>
+              {sortedItems.map((item) => (
+                <div
+                  className={item.is_alert ? 'card-item-alert' : 'card-task'}
+                  key={item.item_id}
+                >
                   <div className="card-title">{item.name}</div>
-                  <div className="card-meta text-alert">残量目安を下回っています</div>
+                  <div className={item.is_alert ? 'card-meta text-alert' : 'card-meta'}>
+                    {item.is_alert
+                      ? '残量目安を下回っています'
+                      : `残量: ${item.current_stock}`}
+                  </div>
                   <div className="flex-between" style={{ marginTop: '20px' }}>
                     <button
                       className="btn btn-secondary"
                       style={{ padding: '6px 12px', fontSize: '0.85em' }}
+                      onClick={() => openItemDetail(item)}
                     >
                       詳細・変更
                     </button>
@@ -204,6 +276,7 @@ function Home() {
                         fontSize: '0.85em',
                         borderColor: '#40342B',
                       }}
+                      onClick={() => handleRestockItem(item.item_id)}
                     >
                       購入完了
                     </button>
@@ -213,7 +286,7 @@ function Home() {
 
               <button 
                 className="btn btn-secondary" 
-                tyle={{ marginTop: '20px' }}
+                style={{ marginTop: '20px' }}
                 onClick={() => setOpenPanel('itemRegister')}
               >
                 消耗品を新規登録
@@ -254,14 +327,6 @@ function Home() {
         onDelete={handleDeleteTask}
       />
 
-      <TaskDetailPanel
-        isOpen={openPanel === 'taskDetail'}
-        onClose={closePanel}
-        task={selectedTask}
-        onEdit={() => setOpenPanel('taskEdit')}
-        onDelete={handleDeleteTask}
-      />
-      
       <TaskEditPanel
         isOpen={openPanel === 'taskEdit'}
         onClose={closePanel}
@@ -273,6 +338,23 @@ function Home() {
         isOpen={openPanel === 'itemRegister'}
         onClose={closePanel}
         onSubmit={handleCreateItem}
+      />
+
+      <ItemDetailPanel
+        isOpen={openPanel === 'itemDetail'}
+        onClose={closePanel}
+        item={selectedItem}
+        onEdit={() => setOpenPanel('itemEdit')}
+        onDelete={handleDeleteItem}
+        onConsume={handleConsumeItem}
+        onRestock={handleRestockItem}
+      />
+
+      <ItemEditPanel
+        isOpen={openPanel === 'itemEdit'}
+        onClose={closePanel}
+        item={selectedItem}
+        onSubmit={handleUpdateItem}
       />
     </div>
   )
