@@ -6,6 +6,7 @@ import { useConfirm } from '../contexts/ConfirmContext'
 import TaskRegisterPanel from '../components/panels/TaskRegisterPanel'
 import TaskDetailPanel from '../components/panels/TaskDetailPanel'
 import TaskEditPanel from '../components/panels/TaskEditPanel'
+import ItemRegisterPanel from '../components/panels/ItemRegisterPanel'
 
 function Home() {
   const navigate = useNavigate()
@@ -74,6 +75,17 @@ function Home() {
       loadData()
     } catch (err) {
       showToast(err.massage)
+    }
+  }
+
+  async function handleCreateItem(itemInput) {
+    try {
+      await apiPost('/api/items', itemInput)
+      showToast('消耗品を登録しました')
+      closePanel()
+      loadData()
+    } catch (err) {
+      showToast(err.message)
     }
   }
 
@@ -199,7 +211,11 @@ function Home() {
                 </div>
               ))}
 
-              <button className="btn btn-secondary" style={{ marginTop: '20px' }}>
+              <button 
+                className="btn btn-secondary" 
+                tyle={{ marginTop: '20px' }}
+                onClick={() => setOpenPanel('itemRegister')}
+              >
                 消耗品を新規登録
               </button>
             </div>
@@ -251,6 +267,12 @@ function Home() {
         onClose={closePanel}
         task={selectedTask}
         onSubmit={handleUpdateTask}
+      />
+
+      <ItemRegisterPanel
+        isOpen={openPanel === 'itemRegister'}
+        onClose={closePanel}
+        onSubmit={handleCreateItem}
       />
     </div>
   )
