@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
 import FloatingPanel from '../FloatingPanel'
 
-function ItemEditPanel({ isOpen, onClose, item, onSubmit }) {
+function ItemEditPanel({ isOpen, onClose, item, onSubmit, categoryOptions = [] }) {
   const [name, setName] = useState('')
   const [currentStock, setCurrentStock] = useState(0)
   const [alertThreshold, setAlertThreshold] = useState(0)
   const [purchaseCycle, setPurchaseCycle] = useState('')
-  const [category, setCategory] = useState('未分類')
+  const [category, setCategory] = useState('')
 
   useEffect(() => {
     if (item) {
@@ -14,7 +14,7 @@ function ItemEditPanel({ isOpen, onClose, item, onSubmit }) {
       setCurrentStock(item.current_stock ?? 0)
       setAlertThreshold(item.alert_threshold ?? 0)
       setPurchaseCycle(item.purchase_cycle ?? '')
-      setCategory(item.category ?? '未分類')
+      setCategory(item.category ?? '')
     }
   }, [item])
 
@@ -68,12 +68,18 @@ function ItemEditPanel({ isOpen, onClose, item, onSubmit }) {
       </div>
       <div className="form-group">
         <label>カテゴリ</label>
-        <select value={category} onChange={(e) => setCategory(e.target.value)}>
-          <option>未分類</option>
-          <option>キッチン</option>
-          <option>お風呂</option>
-          <option>トイレ</option>
-        </select>
+        <input
+          type="text"
+          list="item-category-options"
+          placeholder="例：キッチン"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        />
+        <datalist id="item-category-option">
+          {categoryOptions.map((c) => (
+            <option key={c} value={c} />
+          ))}
+        </datalist>
       </div>
       <button className="btn" onClick={handleSubmit}>
         変更を保存

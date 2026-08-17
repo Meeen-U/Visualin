@@ -50,6 +50,11 @@ function Home() {
     if (a.is_alert === b.is_alert) return 0
     return a.is_alert ? -1 : 1
   })
+
+  const categoryOptions = [
+    ...new Set(items.map((item) => item.category).filter(Boolean)),
+  ]
+
   const alertCount = items.filter((item) => item.is_alert).length
   const showToast = useToast()
   const [openPanel, setOpenPanel] = useState(null)
@@ -338,6 +343,7 @@ function Home() {
         isOpen={openPanel === 'itemRegister'}
         onClose={closePanel}
         onSubmit={handleCreateItem}
+        categoryOptions={categoryOptions}
       />
 
       <ItemDetailPanel
@@ -355,6 +361,7 @@ function Home() {
         onClose={closePanel}
         item={selectedItem}
         onSubmit={handleUpdateItem}
+        categoryOptions={categoryOptions}
       />
     </div>
   )

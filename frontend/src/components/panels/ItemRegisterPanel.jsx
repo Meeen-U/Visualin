@@ -1,18 +1,18 @@
 import { useState } from 'react'
 import FloatingPanel from '../FloatingPanel'
 
-function ItemRegisterPanel({ isOpen, onClose, onSubmit}) {
+function ItemRegisterPanel({ isOpen, onClose, onSubmit, categoryOptions = [] }) {
     const [name, setName] = useState('')
     const [currentStock, setCurrentStock] = useState(1)
     const [alertThreshold, setAlertThreshold] = useState(1)
     const [purchaseCycle, setPurchaseCycle] = useState('')
-    const [category, setCategory] = useState('未分類')
+    const [category, setCategory] = useState('')
 
     function resetForm() {
         setName('')
         setAlertThreshold(1)
         setPurchaseCycle('')
-        setCategory('未分類')
+        setCategory('')
     }
 
     function handleSubmit() {
@@ -70,12 +70,18 @@ function ItemRegisterPanel({ isOpen, onClose, onSubmit}) {
       </div>
       <div className="form-group">
         <label>カテゴリ</label>
-        <select value={category} onChange={(e) => setCategory(e.target.value)}>
-          <option>未分類</option>
-          <option>キッチン</option>
-          <option>お風呂</option>
-          <option>トイレ</option>
-        </select>
+        <input
+          type="text"
+          list="item-category-options"
+          placeholder="例：キッチン"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        />
+        <datalist id="item-category-options">
+          {categoryOptions.map((c) => (
+            <option key={c} value={c} />
+          ))}
+        </datalist>
       </div>
       <button className="btn" onClick={handleSubmit}>
         登録を確定
