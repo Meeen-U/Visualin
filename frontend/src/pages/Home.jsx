@@ -206,6 +206,12 @@ function Home() {
             <div className="dashboard-col">
               <h2 className="col-title title-task">今日の家事タスク</h2>
 
+              {tasks.length === 0 ? (
+                <p style={{ color: '#6E6055', fontSize: '0.9em' }}>
+                  まだタスクが登録されていません
+                </p>
+              ) : null}
+
               {tasks.map((task) => (
                 <div className="card-task" key={task.task_id}>
                   <div className="card-title">{task.title}</div>
@@ -273,6 +279,15 @@ function Home() {
                 </select>
               </div>
 
+              {sortedItems.length === 0 ? (
+                <p style={{ color: '#6E6055', fontSize: '0.9em' }}>
+                  {items.length === 0
+                    ? 'まだ消耗品が登録されていません'
+                    : 'このカテゴリの消耗品はありません'
+                  }
+                </p>
+              ) : null}
+
               {sortedItems.map((item) => (
                 <div
                   className={item.is_alert ? 'card-item-alert' : 'card-task'}
@@ -284,21 +299,29 @@ function Home() {
                       ? '残量目安を下回っています'
                       : `残量: ${item.current_stock}`}
                   </div>
-                  <div className="flex-between" style={{ marginTop: '20px' }}>
+                  <div className="flex-between" style={{ marginTop: '20px', gap: '8px' }}>
                     <button
                       className="btn btn-secondary"
-                      style={{ padding: '6px 12px', fontSize: '0.85em' }}
+                      style={{ padding: '6px 12px', fontSize: '0.85em', margin: 0 }}
                       onClick={() => openItemDetail(item)}
                     >
                       詳細・変更
                     </button>
                     <button
+                      className="btn btn-secondary"
+                      style={{ padding: '6px 10px', fontSize: '0.85em', margin: 0}}
+                      onClick={() => handleConsumeItem(item.item_id)}
+                    >
+                      ➖ 1つ使う
+                    </button>
+                    <button
                       className="btn"
                       style={{
                         backgroundColor: '#6E5447',
-                        padding: '6px 15px',
+                        padding: '6px 12px',
                         fontSize: '0.85em',
                         borderColor: '#40342B',
+                        margin: 0,
                       }}
                       onClick={() => handleRestockItem(item.item_id)}
                     >
