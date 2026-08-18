@@ -45,9 +45,20 @@ function Home() {
     navigate('/login')
   }
 
-  const categoryOptions = [
+  const taskCategoryOptions = [
+    ...new Set(tasks.map((task) => task.category).filter(Boolean)),
+  ]
+
+  const itemCategoryOptions = [
     ...new Set(items.map((item) => item.category).filter(Boolean)),
   ]
+
+    // 次回予定日が近い（または未設定）ものを上に表示する
+  const sortedTasks = [...tasks].sort((a, b) => {
+    if (!a.next_due_date) return -1
+    if (!b.next_due_date) return 1
+    return new Date(a.next_due_date) - new Date(b.next_due_date)
+  })
 
   const showToast = useToast()
   const [openPanel, setOpenPanel] = useState(null)
@@ -103,6 +114,16 @@ function Home() {
       await apiPut(`/api/tasks/${taskId}`, taskInput)
       showToast('タスクの内容を保存しました')
       closePanel()
+      loadData()
+    } catch (err) {
+      showToast(err.message)
+    }
+  }
+
+  async function handleCompleteTask(taskId) {
+    try {
+      await apiPost(`/api/tasks/${taskId}/complete`)
+      showToast('タスクを完了として記録しました')
       loadData()
     } catch (err) {
       showToast(err.message)
@@ -212,7 +233,7 @@ function Home() {
                 </p>
               ) : null}
 
-              {tasks.map((task) => (
+              {sortedTasks.map((task) => (
                 <div className="card-task" key={task.task_id}>
                   <div className="card-title">{task.title}</div>
                   <div className="card-meta">
@@ -243,6 +264,7 @@ function Home() {
                     <button
                       className="btn"
                       style={{ padding: '6px 15px', fontSize: '0.85em' }}
+                      onClick={() => handleCompleteTask(task.task_id)}
                     >
                       完了する
                     </button>
@@ -271,7 +293,7 @@ function Home() {
                   style={{ width: 'auto', fontSize: '0.85em', padding: '4px 8px' }}
                 >
                 <option value="">すべて</option>
-                  {categoryOptions.map((c) => (
+                  {itemCategoryOptions.map((c) => (
                     <option key={c} value={c}>
                       {c}
                     </option>
@@ -364,6 +386,7 @@ function Home() {
         isOpen={openPanel === 'taskRegister'}
         onClose={closePanel}
         onSubmit={handleCreateTask}
+        categoryOptions={taskCategoryOptions}
       />
 
       <TaskDetailPanel
@@ -379,13 +402,14 @@ function Home() {
         onClose={closePanel}
         task={selectedTask}
         onSubmit={handleUpdateTask}
+        categoryOptions={taskCategoryOptions}
       />
 
       <ItemRegisterPanel
         isOpen={openPanel === 'itemRegister'}
         onClose={closePanel}
         onSubmit={handleCreateItem}
-        categoryOptions={categoryOptions}
+        categoryOptions={itemCategoryOptions}
       />
 
       <ItemDetailPanel
@@ -403,7 +427,7 @@ function Home() {
         onClose={closePanel}
         item={selectedItem}
         onSubmit={handleUpdateItem}
-        categoryOptions={categoryOptions}
+        categoryOptions={itemCategoryOptions}
       />
     </div>
   )

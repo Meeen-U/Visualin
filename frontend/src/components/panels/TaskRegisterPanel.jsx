@@ -1,15 +1,15 @@
 import { useState } from 'react'
 import FloatingPanel from '../FloatingPanel'
 
-function TaskRegisterPanel({ isOpen, onClose, onSubmit}) {
+function TaskRegisterPanel({ isOpen, onClose, onSubmit, categoryOptions = [] }) {
     const [title, setTitle] = useState('')
-    const [category, setCategory] = useState('水回り')
+    const [category, setCategory] = useState('')
     const [dueDate, setDueDate] = useState('')
     const [frequency, setFrequency] = useState('')
 
     function resetForm() {
         setTitle('')
-        setCategory('水回り')
+        setCategory('')
         setDueDate('')
         setFrequency('')
     }
@@ -43,10 +43,18 @@ function TaskRegisterPanel({ isOpen, onClose, onSubmit}) {
             </div>
             <div className="form-group">
                 <label>カテゴリ</label>
-                <select value={category} onChange={(e) => setCategory(e.target.value)}>
-                    <option>水回り</option>
-                    <option>キッチン</option>
-                </select>
+                <input
+                    type="text"
+                    list="task-category-options"
+                    placeholder="例：水回り"
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                />
+                <datalist id="task-category-options">
+                    {categoryOptions.map((c) => (
+                        <option key={c} value={c} />
+                    ))}
+                </datalist>
             </div>
             <div className="form-group">
                 <label>次回予定日</label>

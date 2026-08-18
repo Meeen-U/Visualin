@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import FloatingPanel from '../FloatingPanel'
 
-function TaskEditPanel({ isOpen, onClose, task, onSubmit }) {
+function TaskEditPanel({ isOpen, onClose, task, onSubmit, categoryOptions = [] }) {
     const [title, setTitle] = useState('')
-    const [category, setCategory] = useState('水回り')
+    const [category, setCategory] = useState('')
     const [dueDate, setDueDate] = useState('')
     const [frequency, setFrequency] = useState('')
 
@@ -11,7 +11,7 @@ function TaskEditPanel({ isOpen, onClose, task, onSubmit }) {
     useEffect(() => {
         if (task) {
             setTitle(task.title ?? '')
-            setCategory(task.category ?? '水回り')
+            setCategory(task.category ?? '')
             setDueDate(task.next_due_date ?? '')
             setFrequency(task.frequency_days ?? '')
         }
@@ -46,10 +46,18 @@ function TaskEditPanel({ isOpen, onClose, task, onSubmit }) {
       </div>
       <div className="form-group">
         <label>カテゴリ</label>
-        <select value={category} onChange={(e) => setCategory(e.target.value)}>
-          <option>水回り</option>
-          <option>キッチン</option>
-        </select>
+        <input
+          type="text"
+          list="task-category-options-edit"
+          placeholder="例：水回り"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        />
+        <datalist id="task-category-options-edit">
+          {categoryOptions.map((c) => (
+            <option key={c} value={c} />
+          ))}
+        </datalist>
       </div>
       <div className="form-group">
         <label>次回予定日</label>
