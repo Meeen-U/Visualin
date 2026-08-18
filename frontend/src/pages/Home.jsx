@@ -45,22 +45,27 @@ function Home() {
     navigate('/login')
   }
 
-  // アラート中のものを上に、それ以外を下に並べ替えた一覧
-  const sortedItems = [...items].sort((a, b) => {
-    if (a.is_alert === b.is_alert) return 0
-    return a.is_alert ? -1 : 1
-  })
-
   const categoryOptions = [
     ...new Set(items.map((item) => item.category).filter(Boolean)),
   ]
 
-  const alertCount = items.filter((item) => item.is_alert).length
   const showToast = useToast()
   const [openPanel, setOpenPanel] = useState(null)
   const [selectedTask, setSelectedTask] = useState(null)
   const [selectedItem, setSelectedItem] = useState(null)
+  const [categoryFilter, setCategoryFilter] = useState('')
 
+  // アラート中のものを上に、それ以外を下に並べ替えた一覧
+  const filteredItems = categoryFilter
+    ? items.filter((item) => item.category === categoryFilter)
+    : items
+  
+  const sortedItems = [...filteredItems].sort((a, b) => {
+    if (a.is_alert === b.is_alert) return 0
+    return a.is_alert ? -1 : 1
+  })
+
+  const alertCount = items.filter((item) => item.is_alert).length
 
   // Task関連関数
   function openTaskDetail(task) {
@@ -250,9 +255,23 @@ function Home() {
 
             {/* 消耗品列 */}
             <div className="dashboard-col">
-              <h2 className="col-title title-item">
-                消耗品一覧 <span className="badge">{alertCount}</span>
-              </h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                <h2 className="col-title title-item">
+                  消耗品一覧 <span className="badge">{alertCount}</span>
+                </h2>
+                <select
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  style={{ width: 'auto', fontSize: '0.85em', padding: '4px 8px' }}
+                >
+                <option value="">すべて</option>
+                  {categoryOptions.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
               {sortedItems.map((item) => (
                 <div
