@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiGet, apiPost, apiPut, apiDelete, clearToken } from '../api/client'
 import { useToast } from '../contexts/ToastContext'
@@ -195,6 +195,66 @@ function Home() {
     }
   }
 
+  // AI関連関数
+    const [chatMessage, setChatMessages] = useState([
+      { id: 0, role: 'ai', text: 'アシスタントAIです。タスクを細かく分けます'}
+    ])
+    const [chatInput, setChatInput] = useState('')
+    const [isAiLoading, setIsAiLoading] = useState(false)
+    const [taskInitialValues, setTaskInitialValues] = useState(null)
+    const chatAreaRef = useRef(null)
+    const chatMessageIdRef = useRef(1)
+
+    useEffect(() => {
+      if (chatAreaRef.current) {
+        chatAreaRef.current.scrollTop = chatAreaRef.current.scrollHeight
+      }
+    }, [chatMessage])
+
+    // AIチャットのハンドラー
+    function addChatMessage(role, text, subtasks = null) {
+      const id = chatMessageIdRef.current++
+      setChatMessages((prev) => [...prev, { id, role, text, subtasks }])
+    }
+
+    async function handleSendChat() {
+      const text = chatInput.trim()
+      if (!text || isAiLoading) return
+
+      addChatMessage('user', text)
+      setChatInput('')
+      setIsAiLoading(true)
+
+      try {
+        const result = await apiPost('/api/ai/breakdown', { task_name: text })
+        addChatMessage(
+          'ai',
+          `「${text}」の細分化`,
+          result.subtasks
+        )
+      } catch (err) {
+        addChatMessage('ai', `すみません。うまく処理できませんでした(${err.message})`)
+      } finally {
+        setIsAiLoading(false)
+      }
+    }
+
+    function handleChatKeyPress(e) {
+      if (e.key === 'Enter') handleSendChat()
+    }
+
+    function clearChat() {
+      setChatMessages([
+        { id: 0, role: 'ai', text: '新しいチャットを開始しました。'}
+      ])
+      chatMessageIdRef.current = 1
+    }
+
+    function openTaskRegisterFromSubtask(subtask) {
+      setTaskInitialValues({ title: subtask.title, frequency_days: subtask.frequency_days})
+      setOpenPanel('taskRegister')
+    }
+
   function closePanel() {
     setOpenPanel(null)
   }
@@ -275,7 +335,10 @@ function Home() {
               <button 
                 className="btn btn-secondary"
                 style={{ marginTop: '20px' }}
-                onClick={() => setOpenPanel('taskRegister')}  
+                onClick={() => {
+                  setTaskInitialValues(null)
+                  setOpenPanel('taskRegister')
+                }}  
               >
                 タスクを新規登録
               </button>
@@ -370,11 +433,58 @@ function Home() {
               <div className="chat-container">
                 <div className="chat-header">
                   <span>AI アシスト</span>
+                  <button className="chat-new-btn" onClick={clearChat}>
+                    新規チャット
+                  </button>
                 </div>
-                <div className="chat-messages">
-                  <div className="chat-bubble chat-ai">
-                    （作成中）
-                  </div>
+
+                <div className="chat-messages" ref={chatAreaRef}>
+                  {chatMessage.map((msg) => (
+                    <div
+                      key={msg.id}
+                      className={msg.role === 'user' ? 'chat-bubble chat-user' : 'chat-bubble chat-ai'}
+                    >
+                      {msg.text}
+                      {msg.subtasks
+                        ? msg.subtasks.map((subtask, index) => (
+                          <div
+                            key={index}
+                            style={{
+                              border: '1px solid #D6CDC4',
+                              padding: '10px',
+                              background: '#FFFFFF',
+                              marginTop: '10px',
+                            }}
+                          >
+                            {subtask.title} (推奨頻度: {subtask.frequency_days}日)
+                            <button
+                              className="btn btn-secondary"
+                              style={{ padding: '4px 8px', fontSize: '0.8em', marginTop: '5px' }}
+                              onClick={() => openTaskRegisterFromSubtask(subtask)}
+                            >
+                              タスクに登録
+                            </button>
+                          </div>
+                        ))
+                      : null}
+                    </div>
+                  ))}
+                  {isAiLoading ? (
+                    <div className="chat-bubble chat-ai">考え中...</div>
+                  ) : null}
+                </div>
+
+                <div className="chat-input-area">
+                  <input 
+                    type="text"
+                    placeholder="入力例：社内の清掃、衣替え"
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyPress={handleChatKeyPress}
+                  />
+                  <button className="btn" onClick={handleSendChat}>
+                    送信
+                  </button>
                 </div>
               </div>
             </div>
@@ -387,6 +497,7 @@ function Home() {
         onClose={closePanel}
         onSubmit={handleCreateTask}
         categoryOptions={taskCategoryOptions}
+        initialValues={taskInitialValues}
       />
 
       <TaskDetailPanel

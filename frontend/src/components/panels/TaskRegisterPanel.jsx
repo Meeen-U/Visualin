@@ -1,11 +1,19 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import FloatingPanel from '../FloatingPanel'
 
-function TaskRegisterPanel({ isOpen, onClose, onSubmit, categoryOptions = [] }) {
+function TaskRegisterPanel({ isOpen, onClose, onSubmit, categoryOptions = [], initialValues}) {
     const [title, setTitle] = useState('')
     const [category, setCategory] = useState('')
     const [dueDate, setDueDate] = useState('')
     const [frequency, setFrequency] = useState('')
+
+    // AIチャットから開かれた時
+    useEffect(() => {
+        if (isOpen && initialValues) {
+            setTitle(initialValues.title ?? '')
+            setFrequency(initialValues.frequency_days ?? '')
+        }
+    }, [isOpen, initialValues])
 
     function resetForm() {
         setTitle('')
