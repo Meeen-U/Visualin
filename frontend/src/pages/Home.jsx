@@ -202,6 +202,9 @@ function Home() {
     const [chatInput, setChatInput] = useState('')
     const [isAiLoading, setIsAiLoading] = useState(false)
     const [taskInitialValues, setTaskInitialValues] = useState(null)
+    const [showSeasonForm, setShowSeasonForm] = useState(false)
+    const [season, setSeason] = useState('夏')
+    const [livingEnvironment, setLivingEnvironment] = useState('一人暮らし')
     const chatAreaRef = useRef(null)
     const chatMessageIdRef = useRef(1)
 
@@ -238,6 +241,29 @@ function Home() {
         setIsAiLoading(false)
       }
     }
+
+  async function handleProposeTasks() {
+    setShowSeasonForm(false)
+    addChatMessage('user', `季節「${season}」・住環境「${livingEnvironment}」でおすすめの家事を教えて`)
+    setIsAiLoading(true)
+
+    try {
+      const result = await apiPost('/api/ai/propose', {
+        season,
+        living_environment: livingEnvironment,
+      })
+      const subtasks = result.proposed_tasks.map((t) => ({
+        title: t.title,
+        frequency_days: t.frequency_days,
+        description: t.description,
+      }))
+      addChatMessage('ai', 'この季節・住環境ですと、こんな家事がおすすめです。', subtasks)
+    } catch (err) {
+      addChatMessage('ai', `すみません、うまく処理できませんでした（${err.message}）`)
+    } finally {
+      setIsAiLoading(false)
+    }
+  }
 
     function handleChatKeyPress(e) {
       if (e.key === 'Enter') handleSendChat()
@@ -457,6 +483,11 @@ function Home() {
                             }}
                           >
                             {subtask.title} (推奨頻度: {subtask.frequency_days}日)
+                            {subtask.description ? (
+                              <p style={{ fontSize: '0.85em', color: '#6E6055', margin: '5px 0 0 0' }}>
+                                {subtask.description}
+                              </p>
+                            ) : null}
                             <button
                               className="btn btn-secondary"
                               style={{ padding: '4px 8px', fontSize: '0.8em', marginTop: '5px' }}
@@ -474,10 +505,52 @@ function Home() {
                   ) : null}
                 </div>
 
+                {showSeasonForm ? (
+                  <div style={{ padding: '15px', borderTop: '2px solid #40342B', background: '#F5F2EB' }}>
+                    <div className="form-group" style={{ marginBottom: '10px' }}>
+                      <label style={{ fontSize: '0.85em' }}>季節</label>
+                      <select value={season} onChange={(e) => setSeason(e.target.value)}>
+                        <option>春</option>
+                        <option>夏</option>
+                        <option>秋</option>
+                        <option>冬</option>
+                      </select>
+                    </div>
+                    <div className="form-group" style={{ marginBottom: '10px' }}>
+                      <label style={{ fontSize: '0.85em' }}>住環境</label>
+                      <select value={livingEnvironment} onChange={(e) => setLivingEnvironment(e.target.value)}>
+                        <option>一人暮らし</option>
+                        <option>ファミリー世帯</option>
+                        <option>ペットあり</option>
+                      </select>
+                    </div>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <button
+                        className="btn btn-secondary"
+                        style={{ margin: 0, flex: 1 }}
+                        onClick={() => setShowSeasonForm(false)}
+                      >
+                        キャンセル
+                      </button>
+                      <button className="btn" style={{ margin: 0, flex: 1 }} onClick={handleProposeTasks}>
+                        提案してもらう
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    className="chat-new-btn"
+                    style={{ margin: '10px 15px 0 15px', color: '#40342B', borderColor: '#40342B' }}
+                    onClick={() => setShowSeasonForm(true)}
+                  >
+                    🍃 季節の家事を提案してもらう
+                  </button>
+                )}
+
                 <div className="chat-input-area">
-                  <input 
+                  <input
                     type="text"
-                    placeholder="入力例：社内の清掃、衣替え"
+                    placeholder="入力例：車内の清掃、衣替え"
                     value={chatInput}
                     onChange={(e) => setChatInput(e.target.value)}
                     onKeyPress={handleChatKeyPress}
