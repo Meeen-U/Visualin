@@ -1,7 +1,27 @@
+import { useState } from 'react'
 import FloatingPanel from '../FloatingPanel'
+import { apiPost } from '../../api/client'
 
 function ItemDetailPanel({ isOpen, onClose, item, onEdit, onDelete, onConsume, onRestock}) {
+    const [advice, setAdvice] = useState('')
+    const [isPredicting, setIsPredicting] = useState(false)
+    const [predictError, setPredictError] = useState('')
+    
     if (!item) return null
+
+    async function handlePredict() {
+        setIsPredicting(true)
+        setPredictError('')
+        setAdvice('')
+        try {
+            const result = await apiPost('/api/ai/predict', { item_id: item.item_id })
+            setAdvice(result.advice)
+        } catch (err) {
+            setPredictError(err.message)
+        } finally {
+            setIsPredicting(false)
+        }
+    }
 
     return (
         <FloatingPanel
@@ -50,6 +70,37 @@ function ItemDetailPanel({ isOpen, onClose, item, onEdit, onDelete, onConsume, o
                     🛒 購入完了
                 </button>
             </div>
+
+            < div style={{ marginTop: '20px' }}>
+                <button
+                    className="btn btn-secondary"
+                    style={{ margin: 0, width: '100%' }}
+                    onClick={handlePredict}
+                    disabled={isPredicting}
+                >
+                    {isPredicting ? '予測中...' : '購入時期をAIに予測してもらう'}
+                </button>
+                {advice ? (
+                    <p
+                        style={{
+                            marginTop: '10px',
+                            fontSize: '0.9em',
+                            color: '#403428',
+                            background: '#FAF5F2',
+                            padding: '10px',
+                            border: '1px solid #D6CDC4'
+                        }}
+                    >
+                        {advice}
+                    </p>
+                ) : null}
+                {predictError ? (
+                    <p style={{ marginTop: '10px', fontSize: '0.85em', color: '#E9E4A34' }}>
+                        {predictError}
+                    </p>
+                ) : null}
+            </div>
+
 
             <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
                 <button className="btn btn-secondary" style={{ margin: 0, flex: 1 }} onClick={onEdit}>
