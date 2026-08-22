@@ -59,18 +59,23 @@ function Home() {
     ...new Set(items.map((item) => item.category).filter(Boolean)),
   ]
 
-    // 次回予定日が近い（または未設定）ものを上に表示する
-  const sortedTasks = [...tasks].sort((a, b) => {
-    if (!a.next_due_date) return -1
-    if (!b.next_due_date) return 1
-    return new Date(a.next_due_date) - new Date(b.next_due_date)
-  })
-
   const showToast = useToast()
   const [openPanel, setOpenPanel] = useState(null)
   const [selectedTask, setSelectedTask] = useState(null)
   const [selectedItem, setSelectedItem] = useState(null)
   const [categoryFilter, setCategoryFilter] = useState('')
+  const [taskCategoryFilter, setTaskCategoryFilter] = useState('')
+
+  const filteredTasks = taskCategoryFilter
+    ? tasks.filter((task) => task.category === taskCategoryFilter)
+    : tasks
+  
+  // 次回予定日が近いものを上に表示
+  const sortedTasks = [...filteredTasks].sort((a,b) => {
+    if (!a.next_due_date) return -1
+    if (!b.next_due_date) return 1
+    return new Date(a.next_due_date) - new Date(b.next_due_date)
+  })
 
   // アラート中のものを上に、それ以外を下に並べ替えた一覧
   const filteredItems = categoryFilter
@@ -317,11 +322,28 @@ function Home() {
           <div className="dashboard-grid">
             {/* タスク列 */}
             <div className="dashboard-col">
-              <h2 className="col-title title-task">今日の家事タスク</h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                <h2 className="col-title title-task">今日の家事タスク</h2>
+                <select
+                  value={taskCategoryFilter}
+                  onChange={(e) => setTaskCategoryFilter(e.target.value)}
+                  style={{ width: 'auto', fontSize: '0.85em', padding: '4px 8px' }}
+                >
+                  <option value="">すべて</option>
+                  {taskCategoryOptions.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-              {tasks.length === 0 ? (
+              {sortedTasks.length === 0 ? (
                 <p style={{ color: '#6E6055', fontSize: '0.9em' }}>
-                  まだタスクが登録されていません
+                    {tasks.length === 0
+                      ? 'まだタスクが登録されていません'
+                      : 'このカテゴリのタスクはありません'
+                    }
                 </p>
               ) : null}
 
