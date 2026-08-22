@@ -6,12 +6,14 @@ function TaskRegisterPanel({ isOpen, onClose, onSubmit, categoryOptions = [], in
     const [category, setCategory] = useState('')
     const [dueDate, setDueDate] = useState('')
     const [frequency, setFrequency] = useState('')
+    const [description, setDescription] = useState('')
 
     // AIチャットから開かれた時
     useEffect(() => {
         if (isOpen && initialValues) {
             setTitle(initialValues.title ?? '')
             setFrequency(initialValues.frequency_days ?? '')
+            setDescription(initialValues.description ?? '')
         }
     }, [isOpen, initialValues])
 
@@ -20,6 +22,7 @@ function TaskRegisterPanel({ isOpen, onClose, onSubmit, categoryOptions = [], in
         setCategory('')
         setDueDate('')
         setFrequency('')
+        setDescription('')
     }
 
     function handleSubmit() {
@@ -28,6 +31,7 @@ function TaskRegisterPanel({ isOpen, onClose, onSubmit, categoryOptions = [], in
             category,
             next_due_date: dueDate || null,
             frequency_days: Number(frequency),
+            description: description || null,
         })
         resetForm()
     }
@@ -63,6 +67,14 @@ function TaskRegisterPanel({ isOpen, onClose, onSubmit, categoryOptions = [], in
                         <option key={c} value={c} />
                     ))}
                 </datalist>
+            </div>
+            <div className="form-group">
+                <label>説明</label>
+                <textarea
+                    rows={3}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                />
             </div>
             <div className="form-group">
                 <label>次回予定日</label>

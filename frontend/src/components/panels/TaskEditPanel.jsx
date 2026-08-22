@@ -6,6 +6,7 @@ function TaskEditPanel({ isOpen, onClose, task, onSubmit, categoryOptions = [] }
     const [category, setCategory] = useState('')
     const [dueDate, setDueDate] = useState('')
     const [frequency, setFrequency] = useState('')
+    const [description, setDescription] = useState('')
 
     // パネルが開かれるとフォームの値を初期化
     useEffect(() => {
@@ -14,6 +15,7 @@ function TaskEditPanel({ isOpen, onClose, task, onSubmit, categoryOptions = [] }
             setCategory(task.category ?? '')
             setDueDate(task.next_due_date ?? '')
             setFrequency(task.frequency_days ?? '')
+            setDescription(task.description ?? '')
         }
     }, [task])
 
@@ -25,6 +27,7 @@ function TaskEditPanel({ isOpen, onClose, task, onSubmit, categoryOptions = [] }
             category,
             next_due_date: dueDate || null,
             frequency_days: Number(frequency),
+            description: description || null,
         })
     }
 
@@ -58,6 +61,14 @@ function TaskEditPanel({ isOpen, onClose, task, onSubmit, categoryOptions = [] }
             <option key={c} value={c} />
           ))}
         </datalist>
+      </div>
+      <div className='form-group'>
+        <label>説明</label>
+        <textarea
+          rows={3}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
       </div>
       <div className="form-group">
         <label>次回予定日</label>
