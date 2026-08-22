@@ -17,8 +17,9 @@ function FloatingPanel({
     useEffect(() => {
         if (isOpen) {
             setZIndex((z) => z + 1)
+            setPosition({ top: initialTop, left: initialLeft })
         }
-    }, [isOpen])
+    }, [isOpen, initialTop, initialLeft])
 
     function bringToFront() {
         setZIndex((z) => z + 1)
