@@ -160,7 +160,7 @@ function Home() {
   }
 
   async function handleDeleteItem(itemId) {
-    const confirmed = await showConfirm('ホウン等にこの消耗品を削除しますか？')
+    const confirmed = await showConfirm('本等にこの消耗品を削除しますか？')
     if (!confirmed) return
     
     try {

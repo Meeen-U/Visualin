@@ -10,6 +10,7 @@ function ItemRegisterPanel({ isOpen, onClose, onSubmit, categoryOptions = [] }) 
 
     function resetForm() {
         setName('')
+        setCurrentStock(1)
         setAlertThreshold(1)
         setPurchaseCycle('')
         setCategory('')

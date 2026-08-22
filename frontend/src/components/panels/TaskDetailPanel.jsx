@@ -19,7 +19,7 @@ function TaskDetailPanel({ isOpen, onClose, task, onEdit, onDelete}) {
                 <strong>次回予定日:</strong> {task.next_due_date ?? '未設定'}
             </p>
             <p style={{margin: '0 0 8px 0', fontSize: '0.95em' }}>
-                <strong>繰り返し:</strong> {task.frequency_date}日おき
+                <strong>繰り返し:</strong> {task.frequency_days}日おき
             </p>
             {task.description ? (
                 <p style={{margin: '0 0 20px 0', fontSize: '0.95em', color: '#6E6055', lineHeight: '1.6'}}>

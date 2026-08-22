@@ -95,7 +95,7 @@ function ItemDetailPanel({ isOpen, onClose, item, onEdit, onDelete, onConsume, o
                     </p>
                 ) : null}
                 {predictError ? (
-                    <p style={{ marginTop: '10px', fontSize: '0.85em', color: '#E9E4A34' }}>
+                    <p style={{ marginTop: '10px', fontSize: '0.85em', color: '#9E4A34' }}>
                         {predictError}
                     </p>
                 ) : null}

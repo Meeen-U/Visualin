@@ -75,7 +75,7 @@ function ItemEditPanel({ isOpen, onClose, item, onSubmit, categoryOptions = [] }
           value={category}
           onChange={(e) => setCategory(e.target.value)}
         />
-        <datalist id="item-category-option">
+        <datalist id="item-category-options">
           {categoryOptions.map((c) => (
             <option key={c} value={c} />
           ))}
