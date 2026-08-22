@@ -40,9 +40,15 @@ function Home() {
     }
   }
 
-  function handleLogout() {
-    clearToken()
-    navigate('/login')
+  async function handleLogout() {
+    try {
+      await apiPost('/api/auth/logout')
+    } catch (err){
+      // ログアウトAPIが失敗しても、クライアント側のトークン破棄は必ず行う
+    } finally {
+      clearToken()
+      navigate('/login')
+    }
   }
 
   const taskCategoryOptions = [
