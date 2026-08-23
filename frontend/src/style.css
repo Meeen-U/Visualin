@@ -89,9 +89,8 @@ header a {
     margin-top: 5px;
     box-shadow: 5px 10px 22px rgba(43, 34, 26, 0.09);
 }
-/* 3冊目のノート（AIチャット）：ごくわずかに傾け、下に落とす */
+/* 3冊目のノート（AIチャット）：キャレットを表示させたいので変えない */
 .dashboard-grid > .dashboard-col:nth-child(3) {
-    transform: rotate(-0.5deg);
     margin-top: 25px;
     box-shadow: 2px 12px 25px rgba(43, 34, 26, 0.07);
 }
@@ -167,7 +166,18 @@ input[type="text"], input[type="number"], input[type="date"], select, textarea {
 }
 input:focus, select:focus, textarea:focus {
     outline: none; border-color: #2B221A; background-color: #FFFFFF; box-shadow: 2px 2px 0px #2B221A;
+    caret-color: #9E4A34;
 }
+
+
+/* AIチャット入力欄のカーソル */
+/*
+input[type="text"],input[type="number"],input[type="date"],textarea, .chat-input-area input {
+    caret-color: #9E4A34;
+    caret-shape: block;
+}
+
+
 /* ボタンも整然とした角丸を廃止し、スタンプを押したようなソリッドな四角に */
 .btn {
     display: block; width: 100%; padding: 13px; background-color: #40342B; color: #FDFBF7; border: 1px solid #2B221A; border-radius: 0px; font-size: 1em; font-weight: bold; cursor: pointer; text-align: center; text-decoration: none; box-sizing: border-box; margin-top: 10px; font-family: inherit;
