@@ -21,7 +21,7 @@ class UserResponse(BaseModel):
     email: EmailStr
 
     class Config:
-        from_sttributes = True
+        from_attributes = True
 
 
 class RegisterResponse(BaseModel):
