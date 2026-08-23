@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
+import ProtectedRoute from './components/ProtectedRoute'
 import Login from './pages/Login'
 import PasswordReset from './pages/PasswordReset'
 import Register from './pages/Register'
@@ -16,7 +17,14 @@ function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/register-complete" element={<RegisterComplete />} />
 
-      <Route path="/home" element={<Home />} />
+      <Route
+        path="/home"
+        element={
+          <ProtectedRoute>
+            <Home />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   )
 }
