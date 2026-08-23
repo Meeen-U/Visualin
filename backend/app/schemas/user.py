@@ -28,6 +28,8 @@ class RegisterResponse(BaseModel):
     """新規登録成功時のレスポンス全体"""
     message: str
     user: UserResponse
+    access_token: str
+    token_type: str = "bearer"
 
 
 class LoginResponse(BaseModel):  

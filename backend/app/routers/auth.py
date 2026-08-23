@@ -38,6 +38,8 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
 
+    access_token = create_access_token(data={"sub": str(new_user.id)})
+
     return RegisterResponse(
         message="アカウントの登録が完了しました",
         user=UserResponse(
@@ -45,6 +47,7 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)):
             name=new_user.username,
             email=new_user.email,
         ),
+        access_token=access_token,
     )
 
 

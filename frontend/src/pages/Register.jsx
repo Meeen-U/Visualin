@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import Header from '../components/Header'
-import { apiPost } from '../api/client'
+import { apiPost, saveToken } from '../api/client'
 
 function Register() {
   const navigate = useNavigate()
@@ -24,7 +24,8 @@ function Register() {
 
     setIsSubmitting(true)
     try {
-      await apiPost('/api/auth/register', { name, email, password })
+      const data = await apiPost('/api/auth/register', { name, email, password })
+      saveToken(data.access_token)
       navigate('/register-complete')
     } catch (err) {
       setErrorMessage(err.message)
