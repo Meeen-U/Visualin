@@ -33,7 +33,7 @@ function Home() {
   const itemState = useItems({ showToast, showConfirm })
   const aiChat = useAiChat({
     onRegisterTask: (value) => {
-      setTaskInitialValues(values)
+      setTaskInitialValues(value)
       setOpenPanel('taskRegister')
     },
   })
@@ -91,7 +91,7 @@ function Home() {
         <div>家事可視化アプリ びじゅありん</div>
         <a
           href='#'
-          style={{ widht: '80px', textAlign: 'right' }}
+          style={{ width: '80px', textAlign: 'right' }}
           onClick={(e) => {
             e.preventDefault()
             handleLogout()

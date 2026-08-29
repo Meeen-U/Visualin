@@ -2,7 +2,7 @@ function AiChatColumn({
     chatMessages,
     chatInput,
     onChatInputChange,
-    onChatKeyPressm,
+    onChatKeyPress,
     isAiLoading,
     chatAreaRef,
     onSendChat,
@@ -14,14 +14,14 @@ function AiChatColumn({
     onSeasonChange,
     livingEnvironment,
     onLivingEnvironmentChange,
-    onPropposeTasks,
+    onProposeTasks,
 }) {
     return (
         <div
             className="dashboard-col"
             style={{ padding: 0, border: 'none', background: 'transparent', boxShadow: 'none' }}
         >
-            <div className="caht-container">
+            <div className="chat-container">
                 <div className="chat-header">
                     <span>AI アシスト</span>
                     <button className="chat-new-btn" onClick={onClearChat}>
@@ -65,11 +65,11 @@ function AiChatColumn({
                             : null}
                         </div>
                     ))}
-                    {isAiLoading ? <div className="caht-bubble chat-ai">考え中...</div> : null}
+                    {isAiLoading ? <div className="chat-bubble chat-ai">考え中...</div> : null}
                 </div>
 
                 {showSeasonForm ? (
-                    <div style={{ padidng: '15px', borderTop: '2px solid #40342B', background: '#F5F2EB' }}>
+                    <div style={{ padding: '15px', borderTop: '2px solid #40342B', background: '#F5F2EB' }}>
                         <div className="form-group" style={{ marginBottom: '10px' }}>
                             <label style={{ fontSize: '0.85em' }}>季節</label>
                             <select value={season} onChange={(e) => onSeasonChange(e.target.value)}>
@@ -95,7 +95,7 @@ function AiChatColumn({
                             >
                                 キャンセル
                             </button>
-                            <button className="btn" style={{ margin: 0, flex: 1 }} onClick={onPropposeTasks}>
+                            <button className="btn" style={{ margin: 0, flex: 1 }} onClick={onProposeTasks}>
                                 提案してもらう
                             </button>
                         </div>
@@ -116,7 +116,7 @@ function AiChatColumn({
                         placeholder="入力例：車内の清掃、衣替え"
                         value={chatInput}
                         onChange={(e) => onChatInputChange(e.target.value)}
-                        onKeyPress={onChatKeyPressm}
+                        onKeyPress={onChatKeyPress}
                     />
                     <button className="btn" onClick={onSendChat}>
                         送信

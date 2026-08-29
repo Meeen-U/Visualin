@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from 'react'
-import { apiPost } from ' ../api/client'
+import { apiPost } from '../api/client'
 
 // AIチャットのカスタムフック
 
-function useAiChat({ onRegistertask }) {
+function useAiChat({ onRegisterTask }) {
     const [chatMessages, setChatMessages] = useState([
         { id: 0, role: 'ai', text: 'アシスタントAIです。'},
     ])
@@ -45,10 +45,10 @@ function useAiChat({ onRegistertask }) {
         }
     }
 
-    async function handlePropposeTaksk() {
+    async function handlePropposeTasks() {
         setShowSeasonForm(false)
         addChatMessage('user', `季節「${season}」・住環境「${livingEnvironment}」でおすすめの家事を教えて`)
-        setIsAiLoadint(true)
+        setIsAiLoading(true)
 
         try {
             const result = await apiPost('/api/ai/propose', {
@@ -60,7 +60,7 @@ function useAiChat({ onRegistertask }) {
                 frequency_days: t.frequency_days,
                 description: t.description,
             }))
-            addChatMessage('ai', `この季節・住環境ですと、こんな火事がおすすめです`, subtasks)
+            addChatMessage('ai', `この季節・住環境ですと、こんな家事がおすすめです`, subtasks)
         } catch (err) {
             addChatMessage('ai', `すみません、うまく処理できませんでした(${err.message})`)
         } finally {
@@ -78,7 +78,7 @@ function useAiChat({ onRegistertask }) {
     }
 
     function openTaskRegisterFromSubtask(subtask) {
-        onRegistertask({ title: subtask.title, frequency_days: subtask.frequency_days })
+        onRegisterTask({ title: subtask.title, frequency_days: subtask.frequency_days })
     }
 
     return {
@@ -94,7 +94,7 @@ function useAiChat({ onRegistertask }) {
         setLivingEnvironment,
         chatAreaRef,
         handleSendChat,
-        handlePropposeTaksk,
+        handlePropposeTasks,
         handleChatKeyPress,
         clearChat,
         openTaskRegisterFromSubtask,

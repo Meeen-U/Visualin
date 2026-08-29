@@ -77,7 +77,7 @@ function useItems({ showToast, showConfirm }) {
 
     async function handleRestockItem(itemId, onDone) {
         try {
-            await apiPost(`/api/item/${itemId}/restock?restock_quantity=1`)
+            await apiPost(`/api/items/${itemId}/restock?restock_quantity=1`)
             showToast('残量を更新しました')
             onDone?.()
             await loadItems()
@@ -92,8 +92,9 @@ function useItems({ showToast, showConfirm }) {
         itemCategoryOptions,
         categoryFilter,
         alertCount,
+        setCategoryFilter,
         loadItems,
-        handleConsumeItem,
+        handleCreateItem,
         handleUpdateItem,
         handleDeleteItem,
         handleConsumeItem,

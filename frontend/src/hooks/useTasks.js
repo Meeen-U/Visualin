@@ -10,7 +10,7 @@ function useTaks({ showToast, showConfirm }) {
         setTasks(data.tasks)
     }
 
-    const taskCategoryOption = [
+    const taskCategoryOptions = [
         ...new Set(tasks.map((task) => task.category).filter(Boolean)),
     ]
 
@@ -57,6 +57,7 @@ function useTaks({ showToast, showConfirm }) {
     async function handleUpdateTask(taskId, taskInput, onDone) {
         try {
             await apiPut(`/api/tasks/${taskId}`, taskInput)
+            showToast('タスクの内容を保存しました')
             onDone?.()
             await loadTasks()
         } catch (err) {
