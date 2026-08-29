@@ -45,7 +45,7 @@ function useAiChat({ onRegisterTask }) {
         }
     }
 
-    async function handlePropposeTasks() {
+    async function handleProposeTasks() {
         setShowSeasonForm(false)
         addChatMessage('user', `季節「${season}」・住環境「${livingEnvironment}」でおすすめの家事を教えて`)
         setIsAiLoading(true)
@@ -94,7 +94,7 @@ function useAiChat({ onRegisterTask }) {
         setLivingEnvironment,
         chatAreaRef,
         handleSendChat,
-        handlePropposeTasks,
+        handleProposeTasks,
         handleChatKeyPress,
         clearChat,
         openTaskRegisterFromSubtask,
