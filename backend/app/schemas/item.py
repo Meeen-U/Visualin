@@ -37,6 +37,11 @@ class ItemResponse(BaseModel):
     
 class ItemListResponse(BaseModel):
     items: list[ItemResponse]
+    total: int
+    page: int
+    page_size: int
+    categories: list[str] = []
+    alert_count: int = 0
 
 
 class ItemCreateResponse(BaseModel):

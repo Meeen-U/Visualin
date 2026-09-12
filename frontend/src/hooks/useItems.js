@@ -2,38 +2,61 @@ import { useState } from 'react'
 import { apiGet, apiPost, apiPut, apiDelete } from '../api/client'
 
 // 消耗品の一覧取得・CRUD・絞り込みをまとめたカスタムフック
+export const ITEM_PAGE_SIZE = 20
 
 function useItems({ showToast, showConfirm }) {
     const [items, setItems] = useState([])
     const [categoryFilter, setCategoryFilter] = useState('')
+    const [page, setPage] = useState(1)
+    const [total, setTotal] = useState(0)
+    const [itemCategoryOptions, setItemCategoryOptions] = useState([])
+    const [alertCount, setAlertCount] = useState(0)
 
-    async function loadItems() {
-        const data = await apiGet('/api/items')
+    async function loadItems({ nextPage = page, nextCategory = categoryFilter } = {}) {
+        const params = new URLSearchParams({
+            page: String(nextPage),
+            page_size: String(ITEM_PAGE_SIZE),
+        })
+        if (nextCategory) {
+            params.set('category', nextCategory)
+        }
+
+        const data = await apiGet(`/api/items?${params.toString()}`)
+
+        if (data.items.length === 0 && data.page > 1 && data.total > 0) {
+            return loadItems({ nextPage: data.page - 1, nextCategory })
+        }
+
         setItems(data.items)
+        setTotal(data.total)
+        setPage(data.page)
+        setItemCategoryOptions(data.categories || [])
+        setAlertCount(data.alert_count ?? 0)
     }
 
-    const itemCategoryOptions = [
-        ...new Set(items.map((item) => item.category).filter(Boolean)),
-    ]
+    async function handleCategoryFilterChange(value) {
+        setCategoryFilter(value)
+        try {
+            await loadItems({ nextPage: 1, nextCategory: value })
+        } catch (err) {
+            showToast(err.message)
+        }
+    }
 
-    const filteredItems = categoryFilter
-        ? items.filter((item) => item.category === categoryFilter)
-        : items
-
-    // アラート中を上、それ以外を下に
-    const sortedItems = [...filteredItems].sort((a, b) => {
-        if (a.is_alert === b.is_alert) return 0
-        return a.is_alert ? -1 : 1
-    })
-
-    const alertCount = items.filter((item) => item.is_alert).length
+    async function handlePageChange(nextPage) {
+        try {
+            await loadItems({ nextPage })
+        } catch (err) {
+            showToast(err.message)
+        }
+    }
 
     async function handleCreateItem(itemInput, onDone) {
         try {
             await apiPost('/api/items', itemInput)
             showToast('消耗品を登録しました')
             onDone?.()
-            await loadItems()
+            await loadItems({ nextPage: 1 })
         } catch (err) {
             showToast(err.message)
         }
@@ -88,12 +111,15 @@ function useItems({ showToast, showConfirm }) {
 
     return {
         items,
-        sortedItems,
         itemCategoryOptions,
         categoryFilter,
         alertCount,
-        setCategoryFilter,
+        page,
+        pageSize: ITEM_PAGE_SIZE,
+        total,
         loadItems,
+        handleCategoryFilterChange,
+        handlePageChange,
         handleCreateItem,
         handleUpdateItem,
         handleDeleteItem,

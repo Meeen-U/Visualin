@@ -1,9 +1,14 @@
+import ListPager from './ListPager'
+
 function TaskColumn({
     tasks,
-    sortedTasks,
     taskCategoryOptions,
     categoryFilter,
     onCategoryFilterChange,
+    page,
+    pageSize,
+    total,
+    onPageChange,
     onOpenDetail,
     onComplete,
     onOpenRegister,
@@ -27,13 +32,13 @@ function TaskColumn({
             </select>
         </div>
 
-        {sortedTasks.length === 0 ? (
+        {tasks.length === 0 ? (
             <p style={{ color: '#6E6055', fontSize: '0.9em' }}>
-            {tasks.length === 0 ? 'まだタスクが登録されていません' : 'このカテゴリのタスクはありません'}
+            {total === 0 && !categoryFilter ? 'まだタスクが登録されていません' : 'このカテゴリのタスクはありません'}
             </p>
         ) : null}
 
-        {sortedTasks.map((task) => (
+        {tasks.map((task) => (
             <div className="card-task" key={task.task_id}>
                 <div className="card-title">{task.title}</div>
                 <div className="card-meta">
@@ -71,6 +76,8 @@ function TaskColumn({
                 </div>
             </div>
         ))}
+
+        <ListPager page={page} pageSize={pageSize} total={total} onPageChange={onPageChange} />
 
         <button className="btn btn-secondary" style={{ marginTop: '20px' }} onClick={onOpenRegister}>
             タスクを新規登録

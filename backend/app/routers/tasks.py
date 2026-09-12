@@ -1,10 +1,12 @@
 from datetime import datetime, timedelta, date
-from fastapi import APIRouter, Depends, HTTPException, status
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.user import User
 from app.models.task import Task, TaskHistory
+from app.pagination import paginate, paging_query
 from app.security import get_current_user
 from app.schemas.task import (
     TaskCreate,
@@ -37,10 +39,36 @@ def _to_task_response(task: Task) -> TaskResponse:
 def get_tasks(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
+    paging: tuple[int, int] = Depends(paging_query),
+    category: Optional[str] = Query(None, description="カテゴリで絞り込む（未指定なら全件）"),
 ):
-    """ログイン中ユーザーのタスク一覧を取得する"""
-    tasks = db.query(Task).filter(Task.user_id == current_user.id).all()
-    return TaskListResponse(tasks=[_to_task_response(t) for t in tasks])
+    """ログイン中ユーザーのタスク一覧を取得する（ページング対応）"""
+    page, page_size = paging
+    owned = db.query(Task).filter(Task.user_id == current_user.id)
+    query = owned
+    if category:
+        query = query.filter(Task.category == category)
+
+    query = query.order_by(Task.next_due_date.asc(), Task.id.asc())
+    tasks, total = paginate(query, page, page_size)
+
+    categories = [
+        name
+        for (name,) in (
+            owned.filter(Task.category.isnot(None), Task.category != "")
+            .with_entities(Task.category)
+            .distinct()
+            .all()
+        )
+    ]
+
+    return TaskListResponse(
+        tasks=[_to_task_response(t) for t in tasks],
+        total=total,
+        page=page,
+        page_size=page_size,
+        categories=categories,
+    )
 
 
 @router.post("", response_model= TaskCreateResponse)

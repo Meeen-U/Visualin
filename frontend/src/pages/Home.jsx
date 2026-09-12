@@ -110,10 +110,13 @@ function Home() {
           <div className="dashboard-grid">
             <TaskColumn
               tasks={taskState.tasks}
-              sortedTasks={taskState.sortedTasks}
               taskCategoryOptions={taskState.taskCategoryOptions}
               categoryFilter={taskState.categoryFilter}
-              onCategoryFilterChange={taskState.setCategoryFilter}
+              onCategoryFilterChange={taskState.handleCategoryFilterChange}
+              page={taskState.page}
+              pageSize={taskState.pageSize}
+              total={taskState.total}
+              onPageChange={taskState.handlePageChange}
               onOpenDetail={openTaskDetail}
               onComplete={taskState.handleCompleteTask}
               onOpenRegister={openTaskRegister}
@@ -121,11 +124,14 @@ function Home() {
 
             <ItemColumn
               items={itemState.items}
-              sortedItems={itemState.sortedItems}
               itemCategoryOptions={itemState.itemCategoryOptions}
               categoryFilter={itemState.categoryFilter}
-              onCategoryFilterChange={itemState.setCategoryFilter}
+              onCategoryFilterChange={itemState.handleCategoryFilterChange}
               alertCount={itemState.alertCount}
+              page={itemState.page}
+              pageSize={itemState.pageSize}
+              total={itemState.total}
+              onPageChange={itemState.handlePageChange}
               onOpenDetail={openItemDetail}
               onConsume={(itemId) => itemState.handleConsumeItem(itemId,closePanel)}
               onRestock={(itemId) => itemState.handleRestockItem(itemId,closePanel)}

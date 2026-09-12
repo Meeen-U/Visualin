@@ -1,30 +1,52 @@
 import { useState } from 'react'
 import { apiGet, apiPost, apiPut, apiDelete } from '../api/client'
 
+export const TASK_PAGE_SIZE = 20
+
 function useTaks({ showToast, showConfirm }) {
     const [tasks, setTasks] = useState([])
     const [categoryFilter, setCategoryFilter] = useState('')
+    const [page, setPage] = useState(1)
+    const [total, setTotal] = useState(0)
+    const [taskCategoryOptions, setTaskCategoryOptions] = useState([])
 
-    async function loadTasks() {
-        const data = await apiGet('/api/tasks')
+    async function loadTasks({ nextPage = page, nextCategory = categoryFilter } = {}) {
+        const params = new URLSearchParams({
+            page: String(nextPage),
+            page_size: String(TASK_PAGE_SIZE),
+        })
+        if (nextCategory) {
+            params.set('category', nextCategory)
+        }
+
+        const data = await apiGet(`/api/tasks?${params.toString()}`)
+
+        if (data.tasks.length === 0 && data.page > 1 && data.total > 0) {
+            return loadTasks({ nextPage: data.page - 1, nextCategory })
+        }
+
         setTasks(data.tasks)
+        setTotal(data.total)
+        setPage(data.page)
+        setTaskCategoryOptions(data.categories || [])
     }
 
-    const taskCategoryOptions = [
-        ...new Set(tasks.map((task) => task.category).filter(Boolean)),
-    ]
+    async function handleCategoryFilterChange(value) {
+        setCategoryFilter(value)
+        try {
+            await loadTasks({ nextPage: 1, nextCategory: value })
+        } catch (err) {
+            showToast(err.message)
+        }
+    }
 
-    const filteredTasks = categoryFilter
-        ? tasks.filter((task) => task.category === categoryFilter)
-        : tasks
-    
-    // 次回予定日が近いものを上に表示する
-    const sortedTasks = [...filteredTasks].sort((a, b) => {
-        if (!a.next_due_date) return -1
-        if (!b.next_due_date) return 1
-        return new Date(a.next_due_date) - new Date(b.next_due_date)
-    })
-
+    async function handlePageChange(nextPage) {
+        try {
+            await loadTasks({ nextPage })
+        } catch (err) {
+            showToast(err.message)
+        }
+    }
 
     // 新しいタスクを登録する
     async function handleCreateTask(taskInput, onDone) {
@@ -32,7 +54,7 @@ function useTaks({ showToast, showConfirm }) {
             await apiPost('/api/tasks', taskInput)
             showToast('新しいタスクを登録しました')
             onDone?.()
-            await loadTasks()
+            await loadTasks({ nextPage: 1 })
         } catch (err) {
             showToast(err.message)
         }
@@ -78,11 +100,14 @@ function useTaks({ showToast, showConfirm }) {
 
     return {
         tasks,
-        sortedTasks,
         taskCategoryOptions,
         categoryFilter,
-        setCategoryFilter,
+        page,
+        pageSize: TASK_PAGE_SIZE,
+        total,
         loadTasks,
+        handleCategoryFilterChange,
+        handlePageChange,
         handleCreateTask,
         handleDeleteTask,
         handleUpdateTask,

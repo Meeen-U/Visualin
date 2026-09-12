@@ -1,10 +1,15 @@
+import ListPager from './ListPager'
+
 function ItemColumn({
     items,
-    sortedItems,
     itemCategoryOptions,
     categoryFilter,
     onCategoryFilterChange,
     alertCount,
+    page,
+    pageSize,
+    total,
+    onPageChange,
     onOpenDetail,
     onConsume,
     onRestock,
@@ -30,13 +35,13 @@ function ItemColumn({
                 </select>
             </div>
 
-            {sortedItems.length === 0 ? (
+            {items.length === 0 ? (
                  <p style={{ color: '#6E6055', fontSize: '0.9em' }}>
-                    {items.length === 0 ? 'まだ消耗品が登録されていません' : 'このカテゴリの消耗品はありません'}
+                    {total === 0 && !categoryFilter ? 'まだ消耗品が登録されていません' : 'このカテゴリの消耗品はありません'}
                  </p>
             ) : null}
 
-            {sortedItems.map((item) => (
+            {items.map((item) => (
                 <div className={item.is_alert ? 'card-item-alert' : 'card-task'} key={item.item_id}>
                     <div className="card-title">{item.name}</div>
                     <div className={item.is_alert ? 'card-meta text-alert' : 'card-meta'}>
@@ -73,6 +78,8 @@ function ItemColumn({
                     </div>
                 </div>
             ))}
+
+            <ListPager page={page} pageSize={pageSize} total={total} onPageChange={onPageChange} />
 
             <button className="btn btn-secondary" style={{ marginTop: '20px' }} onClick={onOpenRegister}>
                 消耗品を新規登録

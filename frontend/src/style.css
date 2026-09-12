@@ -187,6 +187,35 @@ input[type="text"],input[type="number"],input[type="date"],textarea, .chat-input
 .btn-secondary:hover { background-color: #E2DDD5; }
 
 .flex-between { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+
+.list-pager {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+}
+.list-pager-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.list-pager .btn {
+    width: auto;
+    display: inline-block;
+    margin-top: 0;
+}
+.list-pager .btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+.list-pager-meta,
+.list-pager-page {
+    font-size: 0.8em;
+    color: #6E6055;
+    white-space: nowrap;
+}
 .badge { background-color: #9E4A34; color: white; padding: 2px 7px; font-size: 0.75em; font-weight: bold; margin-left: 6px; }
 .tag { display: inline-block; background: #EBE6DC; color: #40342B; padding: 3px 10px; font-size: 0.8em; margin-bottom: 15px; border: 1px solid #D1C9BF; }
 

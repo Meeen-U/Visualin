@@ -1,10 +1,12 @@
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException, status
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.user import User
 from app.models.item import Item, ItemHistory
+from app.pagination import paginate, paging_query
 from app.security import get_current_user
 from app.schemas.item import (
     ItemCreate,
@@ -38,10 +40,41 @@ def _to_item_response(item: Item) -> ItemResponse:
 def get_items(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
+    paging: tuple[int, int] = Depends(paging_query),
+    category: Optional[str] = Query(None, description="カテゴリで絞り込む（未指定なら全件）"),
 ):
-    """ログイン中ユーザーの消耗品一覧・在庫を取得する"""
-    items = db.query(Item).filter(Item.user_id == current_user.id).all()
-    return ItemListResponse(items=[_to_item_response(i) for i in items])
+    """ログイン中ユーザーの消耗品一覧・在庫を取得する（ページング対応）"""
+    page, page_size = paging
+    owned = db.query(Item).filter(Item.user_id == current_user.id)
+    query = owned
+    if category:
+        query = query.filter(Item.category == category)
+
+    query = query.order_by(
+        (Item.current_stock <= Item.alert_threshold).desc(),
+        Item.id.asc(),
+    )
+    items, total = paginate(query, page, page_size)
+
+    categories = [
+        name
+        for (name,) in (
+            owned.filter(Item.category.isnot(None), Item.category != "")
+            .with_entities(Item.category)
+            .distinct()
+            .all()
+        )
+    ]
+    alert_count = owned.filter(Item.current_stock <= Item.alert_threshold).count()
+
+    return ItemListResponse(
+        items=[_to_item_response(i) for i in items],
+        total=total,
+        page=page,
+        page_size=page_size,
+        categories=categories,
+        alert_count=alert_count,
+    )
 
 
 @router.post("", response_model=ItemCreateResponse)

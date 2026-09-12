@@ -38,6 +38,10 @@ class TaskResponse(BaseModel):
 class TaskListResponse(BaseModel):
     """タスク一覧レスポンス"""
     tasks: list[TaskResponse]
+    total: int
+    page: int
+    page_size: int
+    categories: list[str] = []
 
 
 class TaskCreateResponse(BaseModel):
