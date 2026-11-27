@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import Header from '../components/Header'
 import { apiPost, saveToken } from '../api/client'
+import { validateEmail } from '../utils/validation'
 
 function Register() {
   const navigate = useNavigate()
@@ -17,6 +18,22 @@ function Register() {
     e.preventDefault()
     setErrorMessage('')
 
+    if (!name.trim()) {
+      setErrorMessage('ユーザー名を入力してください')
+      return
+    }
+
+    const emailError = validateEmail(email)
+    if (emailError) {
+      setErrorMessage(emailError)
+      return
+    }
+
+    if (!password) {
+      setErrorMessage('パスワードを入力してください')
+      return
+    }
+
     if (password !== passwordConfirm) {
       setErrorMessage('パスワードが一致しません')
       return
@@ -24,7 +41,7 @@ function Register() {
 
     setIsSubmitting(true)
     try {
-      const data = await apiPost('/api/auth/register', { name, email, password })
+      const data = await apiPost('/api/auth/register', { name: name.trim(), email: email.trim(), password })
       saveToken(data.access_token)
       navigate('/register-complete')
     } catch (err) {
@@ -40,7 +57,7 @@ function Register() {
       <div className="content">
         <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>新規アカウント登録</h2>
 
-        <form onSubmit={handleRegister}>
+        <form onSubmit={handleRegister} noValidate>
           <div className="form-group">
             <label>ユーザー名</label>
             <input

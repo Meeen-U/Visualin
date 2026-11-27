@@ -20,6 +20,36 @@ export function clearToken() {
 }
 
 /**
+ * バックエンドのエラーレスポンスから表示用の文字列を安全に取り出す
+ * FastAPIの422エラーは detail が配列（オブジェクト配列）で返る場合があるため、
+ * そのまま文字列化して "[object Object]" になるのを防ぐ
+ */
+function extractErrorMessage(data, status) {
+  const detail = data?.detail
+
+  if (typeof detail === 'string' && detail.trim()) {
+    return detail
+  }
+
+  if (Array.isArray(detail) && detail.length > 0) {
+    const emailError = detail.find(
+      (item) => Array.isArray(item?.loc) && item.loc.includes('email')
+    )
+    if (emailError) {
+      return 'メールアドレスの形式が正しくありません。「@」と「.com」などのドメインを含めて入力してください（例: example@email.com）'
+    }
+    const messages = detail
+      .map((item) => (typeof item?.msg === 'string' ? item.msg : ''))
+      .filter(Boolean)
+    if (messages.length > 0) {
+      return messages.join(' / ')
+    }
+  }
+
+  return `APIエラーが発生しました（${status}）`
+}
+
+/**
  * APIリクエストの共通処理
  *
  * path: "/api/tasks" のようなパス部分
@@ -47,8 +77,7 @@ async function apiFetch(path, options = {}) {
   const data = await response.json().catch(() => null)
 
   if (!response.ok) {
-    // バックエンドのエラーは { "detail": "エラーメッセージ" } の形式で返る
-    const message = data?.detail || `APIエラーが発生しました（${response.status}）`
+    const message = extractErrorMessage(data, response.status)
     throw new Error(message)
   }
 
