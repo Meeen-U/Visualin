@@ -1,6 +1,5 @@
-import { createContext, useContext, useState, useCallback, useRef } from 'react'
-
-const ConfirmContext = createContext(null)
+import { useState, useCallback, useRef } from 'react'
+import { ConfirmContext } from './useConfirm'
 
 export function ConfirmProvider({ children }) {
   const [message, setMessage] = useState(null)
@@ -69,12 +68,4 @@ export function ConfirmProvider({ children }) {
       ) : null}
     </ConfirmContext.Provider>
   )
-}
-
-export function useConfirm() {
-  const context = useContext(ConfirmContext)
-  if (!context) {
-    throw new Error('useConfirmはConfirmProviderの内側で使ってください')
-  }
-  return context
 }

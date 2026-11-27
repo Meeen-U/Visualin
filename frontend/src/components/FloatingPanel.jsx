@@ -1,28 +1,25 @@
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState } from 'react'
 
-function FloatingPanel({
+let nextZIndex = 1000
+function getNextZIndex() {
+    nextZIndex += 1
+    return nextZIndex
+}
+
+function FloatingPanelContent({
     title,
-    isOpen,
     onClose,
-    initialTop = '20%',
-    initialLeft = '30%',
+    initialTop,
+    initialLeft,
     children,
 }) {
     const panelRef = useRef(null)
     const [position, setPosition] = useState({ top: initialTop, left: initialLeft })
-    const [zIndex, setZIndex] = useState(1000)
+    const [zIndex, setZIndex] = useState(getNextZIndex)
     const dragState = useRef({ dragging: false, startX: 0, startY: 0 })
 
-    // 開くたびに最前面表示
-    useEffect(() => {
-        if (isOpen) {
-            setZIndex((z) => z + 1)
-            setPosition({ top: initialTop, left: initialLeft })
-        }
-    }, [isOpen, initialTop, initialLeft])
-
     function bringToFront() {
-        setZIndex((z) => z + 1)
+        setZIndex(getNextZIndex())
     }
 
     function handleMouseDown(e) {
@@ -32,7 +29,7 @@ function FloatingPanel({
             startX: e.clientX,
             startY: e.clientY,
         }
-        document.addEventListener('mousemove',handleMouseMove)
+        document.addEventListener('mousemove', handleMouseMove)
         document.addEventListener('mouseup', handleMouseUp)
     }
 
@@ -46,7 +43,7 @@ function FloatingPanel({
         const newLeft = rect.left + deltaX
         const newTop = rect.top + deltaY
 
-        setPosition({ top: `${newTop}px`, left: `${newLeft}px`})
+        setPosition({ top: `${newTop}px`, left: `${newLeft}px` })
 
         dragState.current.startX = e.clientX
         dragState.current.startY = e.clientY
@@ -57,8 +54,6 @@ function FloatingPanel({
         document.removeEventListener('mousemove', handleMouseMove)
         document.removeEventListener('mouseup', handleMouseUp)
     }
-
-    if (!isOpen) return null
 
     return (
         <div
@@ -78,6 +73,28 @@ function FloatingPanel({
             </div>
             <div className="panel-content">{children}</div>
         </div>
+    )
+}
+
+function FloatingPanel({
+    title,
+    isOpen,
+    onClose,
+    initialTop = '20%',
+    initialLeft = '30%',
+    children,
+}) {
+    if (!isOpen) return null
+
+    return (
+        <FloatingPanelContent
+            title={title}
+            onClose={onClose}
+            initialTop={initialTop}
+            initialLeft={initialLeft}
+        >
+            {children}
+        </FloatingPanelContent>
     )
 }
 
