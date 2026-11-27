@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import Header from '../components/Header'
 import { apiPost, saveToken } from '../api/client'
+import { validateEmail } from '../utils/validation'
 
 function Login() {
   const navigate = useNavigate()
@@ -14,10 +15,22 @@ function Login() {
   async function handleLogin(e) {
     e.preventDefault()
     setErrorMessage('')
+
+    const emailError = validateEmail(email)
+    if (emailError) {
+      setErrorMessage(emailError)
+      return
+    }
+
+    if (!password) {
+      setErrorMessage('パスワードを入力してください')
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
-      const data = await apiPost('/api/auth/login', { email, password })
+      const data = await apiPost('/api/auth/login', { email: email.trim(), password })
       saveToken(data.access_token)
       navigate('/home')
     } catch (err) {
@@ -33,7 +46,7 @@ function Login() {
       <div className="content">
         <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>ログイン</h2>
 
-        <form onSubmit={handleLogin}>
+        <form onSubmit={handleLogin} noValidate>
           <div className="form-group">
             <label>メールアドレス</label>
             <input

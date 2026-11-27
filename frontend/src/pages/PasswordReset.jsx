@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import Header from '../components/Header'
 import { apiPost } from '../api/client'
 import { useToast } from '../contexts/ToastContext'
+import { validateEmail } from '../utils/validation'
 
 function PasswordReset() {
   const navigate = useNavigate()
@@ -16,11 +17,23 @@ function PasswordReset() {
   async function handleReset(e) {
     e.preventDefault()
     setErrorMessage('')
+
+    const emailError = validateEmail(email)
+    if (emailError) {
+      setErrorMessage(emailError)
+      return
+    }
+
+    if (!newPassword) {
+      setErrorMessage('新しいパスワードを入力してください')
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
       await apiPost('/api/auth/password-reset', {
-        email,
+        email: email.trim(),
         new_password: newPassword,
       })
       showToast('パスワードを再設定しました')
@@ -41,7 +54,7 @@ function PasswordReset() {
           登録しているメールアドレスと、新しいパスワードを入力してください。
         </p>
 
-        <form onSubmit={handleReset}>
+        <form onSubmit={handleReset} noValidate>
           <div className="form-group" style={{ marginTop: '20px' }}>
             <label>メールアドレス</label>
             <input
