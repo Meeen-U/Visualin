@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, Date, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, Date, DateTime, ForeignKey, Index
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.database import Base
@@ -6,6 +6,10 @@ from app.database import Base
 
 class Task(Base):
     __tablename__ = "tasks"
+    __table_args__ = (
+        Index("ix_tasks_user_id_next_due_date", "user_id", "next_due_date"),
+        Index("ix_tasks_user_id_category", "user_id", "category"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
@@ -24,6 +28,9 @@ class Task(Base):
 
 class TaskHistory(Base):
     __tablename__ = "task_histories"
+    __table_args__ = (
+        Index("ix_task_histories_task_id_executed_at", "task_id", "executed_at"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     task_id = Column(Integer, ForeignKey("tasks.id"), nullable=False)
