@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.database import Base
@@ -20,10 +21,14 @@ class Item(Base):
     owner = relationship("User", back_populates="items")
     histories = relationship("ItemHistory", back_populates="item", cascade="all, delete-orphan")
 
-    @property
+    @hybrid_property
     def is_alert(self) -> bool:
-        """残量がアラート目安を下回っているかどうか（DBには保存しない計算値）"""
+        """残量がアラート目安以下かどうか（Python評価・SQL式の両方で利用可能）"""
         return self.current_stock <= self.alert_threshold
+
+    @is_alert.expression
+    def is_alert(cls):
+        return cls.current_stock <= cls.alert_threshold
 
 
 class ItemHistory(Base):

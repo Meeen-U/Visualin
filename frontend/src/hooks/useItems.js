@@ -7,12 +7,17 @@ export const ITEM_PAGE_SIZE = 20
 function useItems({ showToast, showConfirm }) {
     const [items, setItems] = useState([])
     const [categoryFilter, setCategoryFilter] = useState('')
+    const [alertOnly, setAlertOnly] = useState(false)
     const [page, setPage] = useState(1)
     const [total, setTotal] = useState(0)
     const [itemCategoryOptions, setItemCategoryOptions] = useState([])
     const [alertCount, setAlertCount] = useState(0)
 
-    async function loadItems({ nextPage = page, nextCategory = categoryFilter } = {}) {
+    async function loadItems({
+        nextPage = page,
+        nextCategory = categoryFilter,
+        nextAlertOnly = alertOnly,
+    } = {}) {
         const params = new URLSearchParams({
             page: String(nextPage),
             page_size: String(ITEM_PAGE_SIZE),
@@ -20,16 +25,20 @@ function useItems({ showToast, showConfirm }) {
         if (nextCategory) {
             params.set('category', nextCategory)
         }
+        if (nextAlertOnly) {
+            params.set('is_alert', 'true')
+        }
 
         const data = await apiGet(`/api/items?${params.toString()}`)
 
         if (data.items.length === 0 && data.page > 1 && data.total > 0) {
-            return loadItems({ nextPage: data.page - 1, nextCategory })
+            const lastPage = Math.max(1, Math.ceil(data.total / ITEM_PAGE_SIZE))
+            return loadItems({ nextPage: lastPage, nextCategory, nextAlertOnly })
         }
 
         setItems(data.items)
         setTotal(data.total)
-        setPage(data.page)
+        setPage(data.total === 0 ? 1 : data.page)
         setItemCategoryOptions(data.categories || [])
         setAlertCount(data.alert_count ?? 0)
     }
@@ -38,6 +47,15 @@ function useItems({ showToast, showConfirm }) {
         setCategoryFilter(value)
         try {
             await loadItems({ nextPage: 1, nextCategory: value })
+        } catch (err) {
+            showToast(err.message)
+        }
+    }
+
+    async function handleAlertOnlyChange(checked) {
+        setAlertOnly(checked)
+        try {
+            await loadItems({ nextPage: 1, nextAlertOnly: checked })
         } catch (err) {
             showToast(err.message)
         }
@@ -113,12 +131,14 @@ function useItems({ showToast, showConfirm }) {
         items,
         itemCategoryOptions,
         categoryFilter,
+        alertOnly,
         alertCount,
         page,
         pageSize: ITEM_PAGE_SIZE,
         total,
         loadItems,
         handleCategoryFilterChange,
+        handleAlertOnlyChange,
         handlePageChange,
         handleCreateItem,
         handleUpdateItem,

@@ -41,13 +41,48 @@ def get_tasks(
     db: Session = Depends(get_db),
     paging: tuple[int, int] = Depends(paging_query),
     category: Optional[str] = Query(None, description="カテゴリで絞り込む（未指定なら全件）"),
+    due_within_days: Optional[int] = Query(
+        None,
+        ge=0,
+        description="今日から指定日数以内に期限が来るタスク（期限切れ含む）に絞り込む",
+    ),
+    due_before: Optional[date] = Query(
+        None,
+        description="指定日以前が次回予定日のタスクに絞り込む（YYYY-MM-DD）",
+    ),
+    overdue_only: bool = Query(
+        False,
+        description="期限切れ（今日より前）のタスクのみに絞り込む",
+    ),
+    is_completed: Optional[bool] = Query(
+        None,
+        description="完了状態で絞り込む（未指定なら全件）",
+    ),
 ):
-    """ログイン中ユーザーのタスク一覧を取得する（ページング対応）"""
+    """ログイン中ユーザーのタスク一覧を取得する（DB絞り込み・ページング対応）"""
     page, page_size = paging
     owned = db.query(Task).filter(Task.user_id == current_user.id)
     query = owned
     if category:
         query = query.filter(Task.category == category)
+    if overdue_only:
+        query = query.filter(
+            Task.next_due_date.isnot(None),
+            Task.next_due_date < date.today(),
+        )
+    if due_within_days is not None:
+        deadline = date.today() + timedelta(days=due_within_days)
+        query = query.filter(
+            Task.next_due_date.isnot(None),
+            Task.next_due_date <= deadline,
+        )
+    if due_before is not None:
+        query = query.filter(
+            Task.next_due_date.isnot(None),
+            Task.next_due_date <= due_before,
+        )
+    if is_completed is not None:
+        query = query.filter(Task.is_completed == is_completed)
 
     query = query.order_by(Task.next_due_date.asc(), Task.id.asc())
     tasks, total = paginate(query, page, page_size)
@@ -58,6 +93,7 @@ def get_tasks(
             owned.filter(Task.category.isnot(None), Task.category != "")
             .with_entities(Task.category)
             .distinct()
+            .order_by(Task.category.asc())
             .all()
         )
     ]

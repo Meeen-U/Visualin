@@ -188,6 +188,43 @@ input[type="text"],input[type="number"],input[type="date"],textarea, .chat-input
 
 .flex-between { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 
+.col-header {
+    margin-bottom: 16px;
+}
+.col-header .col-title {
+    margin-bottom: 12px;
+}
+.filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+.filter-select {
+    width: auto;
+    font-size: 0.85em;
+    padding: 4px 8px;
+}
+.filter-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    padding: 4px 8px;
+    font-size: 0.85em;
+    font-weight: normal;
+    color: #40342B;
+    background-color: #FAFAFD;
+    border: 1px solid #A69A8F;
+    cursor: pointer;
+    user-select: none;
+}
+.filter-toggle input[type="checkbox"] {
+    margin: 0;
+    accent-color: #9E4A34;
+    cursor: pointer;
+}
+
 .list-pager {
     display: flex;
     justify-content: space-between;
