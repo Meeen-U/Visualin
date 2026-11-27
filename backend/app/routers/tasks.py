@@ -134,12 +134,14 @@ def create_task(
 
 
 def _get_owned_task(task_id: int, current_user: User, db: Session) -> Task:
-    """指定IDのタスクを取得し、自分のタスクでなければエラーにする共通処理"""
-    task = db.query(Task).filter(Task.id == task_id).first()
+    """指定IDかつログイン中ユーザー所有のタスクを取得する共通処理"""
+    task = (
+        db.query(Task)
+        .filter(Task.id == task_id, Task.user_id == current_user.id)
+        .first()
+    )
     if task is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="タスクが見つかりません")
-    if task.user_id != current_user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="このタスクへの操作は許可されていません")
     return task
 
 
