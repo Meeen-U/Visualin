@@ -1,24 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import FloatingPanel from '../FloatingPanel'
 
-function ItemEditPanel({ isOpen, onClose, item, onSubmit, categoryOptions = [] }) {
-  const [name, setName] = useState('')
-  const [currentStock, setCurrentStock] = useState(0)
-  const [alertThreshold, setAlertThreshold] = useState(0)
-  const [purchaseCycle, setPurchaseCycle] = useState('')
-  const [category, setCategory] = useState('')
-
-  useEffect(() => {
-    if (item) {
-      setName(item.name ?? '')
-      setCurrentStock(item.current_stock ?? 0)
-      setAlertThreshold(item.alert_threshold ?? 0)
-      setPurchaseCycle(item.purchase_cycle ?? '')
-      setCategory(item.category ?? '')
-    }
-  }, [item])
-
-  if (!item) return null
+function ItemEditForm({ onClose, item, onSubmit, categoryOptions }) {
+  const [name, setName] = useState(item.name ?? '')
+  const [currentStock, setCurrentStock] = useState(item.current_stock ?? 0)
+  const [alertThreshold, setAlertThreshold] = useState(item.alert_threshold ?? 0)
+  const [purchaseCycle, setPurchaseCycle] = useState(item.purchase_cycle ?? '')
+  const [category, setCategory] = useState(item.category ?? '')
 
   function handleSubmit() {
     onSubmit(item.item_id, {
@@ -33,7 +21,7 @@ function ItemEditPanel({ isOpen, onClose, item, onSubmit, categoryOptions = [] }
   return (
     <FloatingPanel
       title="消耗品情報の変更"
-      isOpen={isOpen}
+      isOpen
       onClose={onClose}
       initialTop="25%"
       initialLeft="40%"
@@ -85,6 +73,20 @@ function ItemEditPanel({ isOpen, onClose, item, onSubmit, categoryOptions = [] }
         変更を保存
       </button>
     </FloatingPanel>
+  )
+}
+
+function ItemEditPanel({ isOpen, onClose, item, onSubmit, categoryOptions = [] }) {
+  if (!isOpen || !item) return null
+
+  return (
+    <ItemEditForm
+      key={item.item_id}
+      onClose={onClose}
+      item={item}
+      onSubmit={onSubmit}
+      categoryOptions={categoryOptions}
+    />
   )
 }
 
