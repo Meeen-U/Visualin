@@ -3,14 +3,19 @@ import { apiGet, apiPost, apiPut, apiDelete } from '../api/client'
 
 export const TASK_PAGE_SIZE = 20
 
-function useTaks({ showToast, showConfirm }) {
+function useTasks({ showToast, showConfirm }) {
     const [tasks, setTasks] = useState([])
     const [categoryFilter, setCategoryFilter] = useState('')
+    const [dueFilter, setDueFilter] = useState('')
     const [page, setPage] = useState(1)
     const [total, setTotal] = useState(0)
     const [taskCategoryOptions, setTaskCategoryOptions] = useState([])
 
-    async function loadTasks({ nextPage = page, nextCategory = categoryFilter } = {}) {
+    async function loadTasks({
+        nextPage = page,
+        nextCategory = categoryFilter,
+        nextDueFilter = dueFilter,
+    } = {}) {
         const params = new URLSearchParams({
             page: String(nextPage),
             page_size: String(TASK_PAGE_SIZE),
@@ -18,16 +23,22 @@ function useTaks({ showToast, showConfirm }) {
         if (nextCategory) {
             params.set('category', nextCategory)
         }
+        if (nextDueFilter === 'overdue') {
+            params.set('overdue_only', 'true')
+        } else if (nextDueFilter !== '') {
+            params.set('due_within_days', nextDueFilter)
+        }
 
         const data = await apiGet(`/api/tasks?${params.toString()}`)
 
         if (data.tasks.length === 0 && data.page > 1 && data.total > 0) {
-            return loadTasks({ nextPage: data.page - 1, nextCategory })
+            const lastPage = Math.max(1, Math.ceil(data.total / TASK_PAGE_SIZE))
+            return loadTasks({ nextPage: lastPage, nextCategory, nextDueFilter })
         }
 
         setTasks(data.tasks)
         setTotal(data.total)
-        setPage(data.page)
+        setPage(data.total === 0 ? 1 : data.page)
         setTaskCategoryOptions(data.categories || [])
     }
 
@@ -35,6 +46,15 @@ function useTaks({ showToast, showConfirm }) {
         setCategoryFilter(value)
         try {
             await loadTasks({ nextPage: 1, nextCategory: value })
+        } catch (err) {
+            showToast(err.message)
+        }
+    }
+
+    async function handleDueFilterChange(value) {
+        setDueFilter(value)
+        try {
+            await loadTasks({ nextPage: 1, nextDueFilter: value })
         } catch (err) {
             showToast(err.message)
         }
@@ -102,11 +122,13 @@ function useTaks({ showToast, showConfirm }) {
         tasks,
         taskCategoryOptions,
         categoryFilter,
+        dueFilter,
         page,
         pageSize: TASK_PAGE_SIZE,
         total,
         loadTasks,
         handleCategoryFilterChange,
+        handleDueFilterChange,
         handlePageChange,
         handleCreateTask,
         handleDeleteTask,
@@ -115,4 +137,4 @@ function useTaks({ showToast, showConfirm }) {
     }
 }
 
-export default useTaks
+export default useTasks

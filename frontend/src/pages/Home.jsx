@@ -113,6 +113,8 @@ function Home() {
               taskCategoryOptions={taskState.taskCategoryOptions}
               categoryFilter={taskState.categoryFilter}
               onCategoryFilterChange={taskState.handleCategoryFilterChange}
+              dueFilter={taskState.dueFilter}
+              onDueFilterChange={taskState.handleDueFilterChange}
               page={taskState.page}
               pageSize={taskState.pageSize}
               total={taskState.total}
@@ -127,6 +129,8 @@ function Home() {
               itemCategoryOptions={itemState.itemCategoryOptions}
               categoryFilter={itemState.categoryFilter}
               onCategoryFilterChange={itemState.handleCategoryFilterChange}
+              alertOnly={itemState.alertOnly}
+              onAlertOnlyChange={itemState.handleAlertOnlyChange}
               alertCount={itemState.alertCount}
               page={itemState.page}
               pageSize={itemState.pageSize}

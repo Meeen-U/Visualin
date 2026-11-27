@@ -5,6 +5,8 @@ function ItemColumn({
     itemCategoryOptions,
     categoryFilter,
     onCategoryFilterChange,
+    alertOnly,
+    onAlertOnlyChange,
     alertCount,
     page,
     pageSize,
@@ -15,29 +17,47 @@ function ItemColumn({
     onRestock,
     onOpenRegister,
 }) {
+    const hasFilter = Boolean(categoryFilter || alertOnly)
+    const emptyMessage = !hasFilter && total === 0
+        ? 'まだ消耗品が登録されていません'
+        : alertOnly && !categoryFilter
+            ? '在庫アラートの消耗品はありません'
+            : '条件に一致する消耗品はありません'
+
     return (
         <div className="dashboard-col">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+            <div className="col-header">
                 <h2 className="col-title title-item">
                     消耗品一覧 <span className="badge">{alertCount}</span>
                 </h2>
-                <select
-                    value={categoryFilter}
-                    onChange={(e) => onCategoryFilterChange(e.target.value)}
-                    style={{ width: 'auto', fontSize: '0.85em', padding: '4px 8px' }}
-                >
-                <option value="">すべて</option>
-                {itemCategoryOptions.map((c) => (
-                    <option key={c} value={c}>
-                        {c}
-                    </option>
-                ))}
-                </select>
+                <div className="filter-bar">
+                    <select
+                        aria-label="カテゴリで絞り込み"
+                        className="filter-select"
+                        value={categoryFilter}
+                        onChange={(e) => onCategoryFilterChange(e.target.value)}
+                    >
+                        <option value="">カテゴリ: すべて</option>
+                        {itemCategoryOptions.map((c) => (
+                            <option key={c} value={c}>
+                                {c}
+                            </option>
+                        ))}
+                    </select>
+                    <label className="filter-toggle">
+                        <input
+                            type="checkbox"
+                            checked={alertOnly}
+                            onChange={(e) => onAlertOnlyChange(e.target.checked)}
+                        />
+                        <span>アラートのみ</span>
+                    </label>
+                </div>
             </div>
 
             {items.length === 0 ? (
                  <p style={{ color: '#6E6055', fontSize: '0.9em' }}>
-                    {total === 0 && !categoryFilter ? 'まだ消耗品が登録されていません' : 'このカテゴリの消耗品はありません'}
+                    {emptyMessage}
                  </p>
             ) : null}
 

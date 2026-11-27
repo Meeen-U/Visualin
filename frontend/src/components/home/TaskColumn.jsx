@@ -5,6 +5,8 @@ function TaskColumn({
     taskCategoryOptions,
     categoryFilter,
     onCategoryFilterChange,
+    dueFilter,
+    onDueFilterChange,
     page,
     pageSize,
     total,
@@ -13,28 +15,45 @@ function TaskColumn({
     onComplete,
     onOpenRegister,
 }) {
+    const hasFilter = Boolean(categoryFilter || dueFilter)
+
     return (
 
     <div className="dashboard-col">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+        <div className="col-header">
             <h2 className="col-title title-task">今日の家事タスク</h2>
-            <select
-                value={categoryFilter}
-                onChange={(e) => onCategoryFilterChange(e.target.value)}
-                style={{ width: 'auto', fontSize: '0.85em', padding: '4px 8px' }}
-            >
-            <option value="">すべて</option>
-            {taskCategoryOptions.map((c) => (
-                <option key={c} value={c}>
-                    {c}
-                </option>
-            ))}
-            </select>
+            <div className="filter-bar">
+                <select
+                    aria-label="カテゴリで絞り込み"
+                    className="filter-select"
+                    value={categoryFilter}
+                    onChange={(e) => onCategoryFilterChange(e.target.value)}
+                >
+                    <option value="">カテゴリ: すべて</option>
+                    {taskCategoryOptions.map((c) => (
+                        <option key={c} value={c}>
+                            {c}
+                        </option>
+                    ))}
+                </select>
+                <select
+                    aria-label="期限で絞り込み"
+                    className="filter-select"
+                    value={dueFilter}
+                    onChange={(e) => onDueFilterChange(e.target.value)}
+                >
+                    <option value="">期限: すべて</option>
+                    <option value="overdue">期限切れ</option>
+                    <option value="0">今日まで</option>
+                    <option value="3">3日以内</option>
+                    <option value="7">7日以内</option>
+                </select>
+            </div>
         </div>
 
         {tasks.length === 0 ? (
             <p style={{ color: '#6E6055', fontSize: '0.9em' }}>
-            {total === 0 && !categoryFilter ? 'まだタスクが登録されていません' : 'このカテゴリのタスクはありません'}
+            {total === 0 && !hasFilter ? 'まだタスクが登録されていません' : '条件に一致するタスクはありません'}
             </p>
         ) : null}
 

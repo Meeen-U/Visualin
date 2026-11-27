@@ -42,16 +42,24 @@ def get_items(
     db: Session = Depends(get_db),
     paging: tuple[int, int] = Depends(paging_query),
     category: Optional[str] = Query(None, description="カテゴリで絞り込む（未指定なら全件）"),
+    is_alert: Optional[bool] = Query(
+        None,
+        description="在庫アラート状態で絞り込む（true: アラート品のみ, false: 通常品のみ, 未指定: 全件）",
+    ),
 ):
-    """ログイン中ユーザーの消耗品一覧・在庫を取得する（ページング対応）"""
+    """ログイン中ユーザーの消耗品一覧・在庫を取得する（DB絞り込み・ページング対応）"""
     page, page_size = paging
     owned = db.query(Item).filter(Item.user_id == current_user.id)
     query = owned
     if category:
         query = query.filter(Item.category == category)
+    if is_alert is True:
+        query = query.filter(Item.is_alert)
+    elif is_alert is False:
+        query = query.filter(~Item.is_alert)
 
     query = query.order_by(
-        (Item.current_stock <= Item.alert_threshold).desc(),
+        Item.is_alert.desc(),
         Item.id.asc(),
     )
     items, total = paginate(query, page, page_size)
@@ -62,10 +70,11 @@ def get_items(
             owned.filter(Item.category.isnot(None), Item.category != "")
             .with_entities(Item.category)
             .distinct()
+            .order_by(Item.category.asc())
             .all()
         )
     ]
-    alert_count = owned.filter(Item.current_stock <= Item.alert_threshold).count()
+    alert_count = owned.filter(Item.is_alert).count()
 
     return ItemListResponse(
         items=[_to_item_response(i) for i in items],
