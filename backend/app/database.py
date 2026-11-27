@@ -23,5 +23,13 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+def init_db():
+    """テーブルとモデル定義済みのインデックスを作成する（既存テーブルの不足インデックスも補完）"""
+    Base.metadata.create_all(bind=engine)
+    for table in Base.metadata.sorted_tables:
+        for index in table.indexes:
+            index.create(bind=engine, checkfirst=True)
         
     

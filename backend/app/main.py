@@ -1,11 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.database import engine, Base
+from app.database import init_db
 from app import models
 from app.routers import auth, tasks, items, ai
 
-# テーブルがまだ存在しなければ作成する
-Base.metadata.create_all(bind=engine)
+# テーブルとインデックスがまだ存在しなければ作成する
+init_db()
 
 app = FastAPI(title="Visualin API")
 
