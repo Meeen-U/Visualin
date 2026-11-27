@@ -39,24 +39,20 @@ function Home() {
   })
 
   useEffect(() => {
-    let cancelled = false
-    async function loadInitialData() {
-      setIsLoading(true)
-      setErrorMessage('')
-      try {
-        await Promise.all([taskState.loadTasks(), itemState.loadItems()])
-      } catch (err) {
-        if (!cancelled) setErrorMessage(err.message)
-      } finally {
-        if (!cancelled) setIsLoading(false)
-      }
-    }
-    loadInitialData()
-    return () => {
-      cancelled = true
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    loadData()
   }, [])
+
+  async function loadData() {
+    setIsLoading(true)
+    setErrorMessage('')
+    try {
+      await Promise.all([taskState.loadTasks(), itemState.loadItems()])
+    } catch (err) {
+      setErrorMessage(err.message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   async function handleLogout() {
     try {
@@ -91,7 +87,7 @@ function Home() {
   return (
     <div className="container">
       <header>
-        <span>🏠 家事可視化アプリ びじゅありん</span>
+        <span>家事可視化アプリ びじゅありん</span>
         <a
           href="#"
           onClick={(e) => {
