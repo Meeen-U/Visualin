@@ -112,12 +112,14 @@ def create_item(
 
 
 def _get_owned_item(item_id: int, current_user: User, db: Session) -> Item:
-    """指定IDの消耗品を取得し、自分のものでなければエラーにする共通処理"""
-    item = db.query(Item).filter(Item.id == item_id).first()
+    """指定IDかつログイン中ユーザー所有の消耗品を取得する共通処理"""
+    item = (
+        db.query(Item)
+        .filter(Item.id == item_id, Item.user_id == current_user.id)
+        .first()
+    )
     if item is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="消耗品が見つかりません")
-    if item.user_id != current_user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="この消耗品への操作は許可されていません")
     return item
 
 @router.put("/{item_id}", response_model=ItemUpdateResponse)

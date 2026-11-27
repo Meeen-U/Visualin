@@ -87,11 +87,13 @@ def predict_purchase_timing(
     """
     消耗品の消費・購入履歴から、次回の購入時期を予測する（ユースケース4-3）。
     """
-    item = db.query(Item).filter(Item.id == request.item_id).first()
+    item = (
+        db.query(Item)
+        .filter(Item.id == request.item_id, Item.user_id == current_user.id)
+        .first()
+    )
     if item is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="消耗品が見つかりません")
-    if item.user_id != current_user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="この消耗品への操作は許可されていません")
 
     histories = (
         db.query(ItemHistory)
