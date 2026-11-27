@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Index
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -7,6 +7,9 @@ from app.database import Base
 
 class Item(Base):
     __tablename__ = "items"
+    __table_args__ = (
+        Index("ix_items_user_id_category", "user_id", "category"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
@@ -33,6 +36,9 @@ class Item(Base):
 
 class ItemHistory(Base):
     __tablename__ = "item_histories"
+    __table_args__ = (
+        Index("ix_item_histories_item_id_executed_at", "item_id", "executed_at"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     item_id = Column(Integer, ForeignKey("items.id"), nullable=False)
