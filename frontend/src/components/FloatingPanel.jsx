@@ -1,28 +1,63 @@
 import { useRef, useState, useEffect } from 'react'
 
-function FloatingPanel({
-    title,
-    isOpen,
-    onClose,
-    initialTop = '20%',
-    initialLeft = '30%',
-    children,
-}) {
+let globalPanelZIndex = 1000
+
+function parseCoord(value, viewportSize) {
+    if (typeof value === 'number') return value
+    if (typeof value === 'string' && value.endsWith('%')) {
+        return (parseFloat(value) / 100) * viewportSize
+    }
+    const parsed = parseFloat(value)
+    return Number.isNaN(parsed) ? 48 : parsed
+}
+
+function clampPosition(left, top, panelWidth, panelHeight) {
+    const margin = 16
+    const vw = typeof window !== 'undefined' ? window.innerWidth : 1024
+    const vh = typeof window !== 'undefined' ? window.innerHeight : 768
+    const maxLeft = Math.max(margin, vw - panelWidth - margin)
+    const maxTop = Math.max(margin, vh - panelHeight - margin)
+    return {
+        left: Math.min(Math.max(margin, left), maxLeft),
+        top: Math.min(Math.max(margin, top), maxTop),
+    }
+}
+
+function getInitialClampedPosition(initialTop, initialLeft) {
+    const vw = typeof window !== 'undefined' ? window.innerWidth : 1024
+    const vh = typeof window !== 'undefined' ? window.innerHeight : 768
+    const estimatedWidth = Math.min(370, vw - 32)
+    const estimatedHeight = Math.min(420, vh - 64)
+    const rawLeft = parseCoord(initialLeft, vw)
+    const rawTop = parseCoord(initialTop, vh)
+    return clampPosition(rawLeft, rawTop, estimatedWidth, estimatedHeight)
+}
+
+function FloatingPanelContent({ title, onClose, initialTop, initialLeft, children }) {
     const panelRef = useRef(null)
-    const [position, setPosition] = useState({ top: initialTop, left: initialLeft })
-    const [zIndex, setZIndex] = useState(1000)
+    const [position, setPosition] = useState(() =>
+        getInitialClampedPosition(initialTop, initialLeft)
+    )
+    const [zIndex, setZIndex] = useState(() => ++globalPanelZIndex)
     const dragState = useRef({ dragging: false, startX: 0, startY: 0 })
 
-    // 開くたびに最前面表示
+    const cleanupDragRef = useRef(null)
+
     useEffect(() => {
-        if (isOpen) {
-            setZIndex((z) => z + 1)
-            setPosition({ top: initialTop, left: initialLeft })
+        function handleResize() {
+            if (!panelRef.current) return
+            const rect = panelRef.current.getBoundingClientRect()
+            setPosition((prev) => clampPosition(prev.left, prev.top, rect.width, rect.height))
         }
-    }, [isOpen, initialTop, initialLeft])
+        window.addEventListener('resize', handleResize)
+        return () => {
+            window.removeEventListener('resize', handleResize)
+            cleanupDragRef.current?.()
+        }
+    }, [])
 
     function bringToFront() {
-        setZIndex((z) => z + 1)
+        setZIndex(++globalPanelZIndex)
     }
 
     function handleMouseDown(e) {
@@ -32,33 +67,33 @@ function FloatingPanel({
             startX: e.clientX,
             startY: e.clientY,
         }
-        document.addEventListener('mousemove',handleMouseMove)
-        document.addEventListener('mouseup', handleMouseUp)
+
+        function onMouseMove(moveEvent) {
+            if (!dragState.current.dragging || !panelRef.current) return
+
+            const deltaX = moveEvent.clientX - dragState.current.startX
+            const deltaY = moveEvent.clientY - dragState.current.startY
+
+            const rect = panelRef.current.getBoundingClientRect()
+            const next = clampPosition(rect.left + deltaX, rect.top + deltaY, rect.width, rect.height)
+
+            setPosition(next)
+
+            dragState.current.startX = moveEvent.clientX
+            dragState.current.startY = moveEvent.clientY
+        }
+
+        function onMouseUp() {
+            dragState.current.dragging = false
+            document.removeEventListener('mousemove', onMouseMove)
+            document.removeEventListener('mouseup', onMouseUp)
+            cleanupDragRef.current = null
+        }
+
+        cleanupDragRef.current = onMouseUp
+        document.addEventListener('mousemove', onMouseMove)
+        document.addEventListener('mouseup', onMouseUp)
     }
-
-    function handleMouseMove(e) {
-        if (!dragState.current.dragging || !panelRef.current) return
-
-        const deltaX = e.clientX - dragState.current.startX
-        const deltaY = e.clientY - dragState.current.startY
-
-        const rect = panelRef.current.getBoundingClientRect()
-        const newLeft = rect.left + deltaX
-        const newTop = rect.top + deltaY
-
-        setPosition({ top: `${newTop}px`, left: `${newLeft}px`})
-
-        dragState.current.startX = e.clientX
-        dragState.current.startY = e.clientY
-    }
-
-    function handleMouseUp() {
-        dragState.current.dragging = false
-        document.removeEventListener('mousemove', handleMouseMove)
-        document.removeEventListener('mouseup', handleMouseUp)
-    }
-
-    if (!isOpen) return null
 
     return (
         <div
@@ -66,18 +101,48 @@ function FloatingPanel({
             className="floating-panel"
             style={{
                 display: 'block',
-                top: position.top,
-                left: position.left,
+                top: `${position.top}px`,
+                left: `${position.left}px`,
                 zIndex,
             }}
             onMouseDown={bringToFront}
         >
             <div className="panel-header" onMouseDown={handleMouseDown}>
                 <span>{title}</span>
-                <span className="panel-close" onClick={onClose}>*</span>
+                <button
+                    type="button"
+                    className="panel-close"
+                    aria-label="閉じる"
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onClick={onClose}
+                >
+                    ×
+                </button>
             </div>
             <div className="panel-content">{children}</div>
         </div>
+    )
+}
+
+function FloatingPanel({
+    title,
+    isOpen,
+    onClose,
+    initialTop = '20%',
+    initialLeft = '30%',
+    children,
+}) {
+    if (!isOpen) return null
+
+    return (
+        <FloatingPanelContent
+            title={title}
+            onClose={onClose}
+            initialTop={initialTop}
+            initialLeft={initialLeft}
+        >
+            {children}
+        </FloatingPanelContent>
     )
 }
 

@@ -1,40 +1,25 @@
 import { useState } from 'react'
 import FloatingPanel from '../FloatingPanel'
 
-function ItemRegisterPanel({ isOpen, onClose, onSubmit, categoryOptions = [] }) {
-    const [name, setName] = useState('')
-    const [currentStock, setCurrentStock] = useState(1)
-    const [alertThreshold, setAlertThreshold] = useState(1)
-    const [purchaseCycle, setPurchaseCycle] = useState('')
-    const [category, setCategory] = useState('')
+function ItemRegisterForm({ onSubmit, categoryOptions }) {
+  const [name, setName] = useState('')
+  const [currentStock, setCurrentStock] = useState(1)
+  const [alertThreshold, setAlertThreshold] = useState(1)
+  const [purchaseCycle, setPurchaseCycle] = useState('')
+  const [category, setCategory] = useState('')
 
-    function resetForm() {
-        setName('')
-        setCurrentStock(1)
-        setAlertThreshold(1)
-        setPurchaseCycle('')
-        setCategory('')
-    }
+  function handleSubmit() {
+    onSubmit({
+      name,
+      current_stock: Number(currentStock),
+      alert_threshold: Number(alertThreshold),
+      purchase_cycle: purchaseCycle ? Number(purchaseCycle) : null,
+      category,
+    })
+  }
 
-    function handleSubmit() {
-        onSubmit({
-            name,
-            current_stock: Number(currentStock),
-            alert_threshold: Number(alertThreshold),
-            purchase_cycle: purchaseCycle ? Number(purchaseCycle) : null,
-            category,
-        })
-        resetForm()   
-    }
-
-    return (
-    <FloatingPanel
-      title="消耗品新規登録"
-      isOpen={isOpen}
-      onClose={onClose}
-      initialTop="15%"
-      initialLeft="50%"
-    >
+  return (
+    <>
       <div className="form-group">
         <label>消耗品の名前</label>
         <input
@@ -84,9 +69,23 @@ function ItemRegisterPanel({ isOpen, onClose, onSubmit, categoryOptions = [] }) 
           ))}
         </datalist>
       </div>
-      <button className="btn" onClick={handleSubmit}>
+      <button type="button" className="btn" onClick={handleSubmit}>
         登録を確定
       </button>
+    </>
+  )
+}
+
+function ItemRegisterPanel({ isOpen, onClose, onSubmit, categoryOptions = [] }) {
+  return (
+    <FloatingPanel
+      title="消耗品新規登録"
+      isOpen={isOpen}
+      onClose={onClose}
+      initialTop="15%"
+      initialLeft="50%"
+    >
+      <ItemRegisterForm onSubmit={onSubmit} categoryOptions={categoryOptions} />
     </FloatingPanel>
   )
 }

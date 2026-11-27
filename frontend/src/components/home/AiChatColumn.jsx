@@ -17,14 +17,12 @@ function AiChatColumn({
     onProposeTasks,
 }) {
     return (
-        <div
-            className="dashboard-col"
-            style={{ padding: 0, border: 'none', background: 'transparent', boxShadow: 'none' }}
-        >
+        <section className="dashboard-col">
+            <h2 className="col-title">AIに相談</h2>
             <div className="chat-container">
                 <div className="chat-header">
                     <span>AI アシスト</span>
-                    <button className="chat-new-btn" onClick={onClearChat}>
+                    <button type="button" className="chat-new-btn" onClick={onClearChat}>
                         新規チャット
                     </button>
                 </div>
@@ -38,40 +36,32 @@ function AiChatColumn({
                             {msg.text}
                             {msg.subtasks
                                 ? msg.subtasks.map((subtask, index) => (
-                                    <div
-                                        key={index}
-                                        style={{
-                                            border: '1px solid #D6CDC4',
-                                            padding: '10px',
-                                            background: '#FFFFFF',
-                                            marginTop: '10px',
-                                        }}
-                                    >
-                                        {subtask.title} (推奨頻度: {subtask.frequency_days}日)
+                                    <div key={index} className="chat-subtask">
+                                        <div className="chat-subtask-title">
+                                            {subtask.title}（推奨頻度: {subtask.frequency_days}日）
+                                        </div>
                                         {subtask.description ? (
-                                            <p style={{ fontSize: '0.85em', color: '#6E6055', margin: '5px 0 0 0' }}>
-                                                {subtask.description}
-                                            </p>
+                                            <p className="chat-subtask-desc">{subtask.description}</p>
                                         ) : null}
                                         <button
+                                            type="button"
                                             className="btn btn-secondary"
-                                            style={{ padding: '4px 8px', fontSize: '0.8em', marginTop: '5px' }}
                                             onClick={() => onRegisterSubtask(subtask)}
                                         >
-                                            タスクに登録
+                                            ＋ タスクに登録
                                         </button>
                                     </div>
                                 ))
-                            : null}
+                                : null}
                         </div>
                     ))}
                     {isAiLoading ? <div className="chat-bubble chat-ai">考え中...</div> : null}
                 </div>
 
                 {showSeasonForm ? (
-                    <div style={{ padding: '15px', borderTop: '2px solid #40342B', background: '#F5F2EB' }}>
+                    <div className="chat-season-form">
                         <div className="form-group" style={{ marginBottom: '10px' }}>
-                            <label style={{ fontSize: '0.85em' }}>季節</label>
+                            <label>季節</label>
                             <select value={season} onChange={(e) => onSeasonChange(e.target.value)}>
                                 <option>春</option>
                                 <option>夏</option>
@@ -80,34 +70,39 @@ function AiChatColumn({
                             </select>
                         </div>
                         <div className="form-group" style={{ marginBottom: '10px' }}>
-                            <label style={{ fontSize: '0.85em' }}>住環境</label>
-                            <select value={livingEnvironment} onChange={(e) => onLivingEnvironmentChange(e.target.value)}>
+                            <label>住環境</label>
+                            <select
+                                value={livingEnvironment}
+                                onChange={(e) => onLivingEnvironmentChange(e.target.value)}
+                            >
                                 <option>一人暮らし</option>
                                 <option>ファミリー世帯</option>
                                 <option>ペットあり</option>
                             </select>
                         </div>
-                        <div style={{ display: 'flex', gap: '10px' }}>
+                        <div className="panel-actions" style={{ marginTop: '12px' }}>
                             <button
+                                type="button"
                                 className="btn btn-secondary"
-                                style={{ margin: 0, flex: 1 }}
                                 onClick={() => onShowSeasonForm(false)}
                             >
                                 キャンセル
                             </button>
-                            <button className="btn" style={{ margin: 0, flex: 1 }} onClick={onProposeTasks}>
+                            <button type="button" className="btn" onClick={onProposeTasks}>
                                 提案してもらう
                             </button>
                         </div>
                     </div>
                 ) : (
-                    <button
-                        className="chat-new-btn"
-                        style={{ margin: '10px 15px 0 15px', color: '#40342B', borderColor: '#40342B' }}
-                        onClick={() => onShowSeasonForm(true)}
-                    >
-                        季節の家事を提案してもらう
-                    </button>
+                    <div className="chat-season-bar">
+                        <button
+                            type="button"
+                            className="chat-season-trigger"
+                            onClick={() => onShowSeasonForm(true)}
+                        >
+                            季節の家事を提案してもらう
+                        </button>
+                    </div>
                 )}
 
                 <div className="chat-input-area">
@@ -118,12 +113,12 @@ function AiChatColumn({
                         onChange={(e) => onChatInputChange(e.target.value)}
                         onKeyPress={onChatKeyPress}
                     />
-                    <button className="btn" onClick={onSendChat}>
+                    <button type="button" className="btn" onClick={onSendChat}>
                         送信
                     </button>
                 </div>
             </div>
-        </div>
+        </section>
     )
 }
 

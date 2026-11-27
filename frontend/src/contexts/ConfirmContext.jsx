@@ -25,40 +25,20 @@ export function ConfirmProvider({ children }) {
     <ConfirmContext.Provider value={showConfirm}>
       {children}
       {message ? (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: 'rgba(43, 34, 26, 0.35)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 5000,
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: '#FFFFFF',
-              border: '2px solid #2B221A',
-              padding: '28px',
-              width: '320px',
-              boxShadow: '10px 15px 35px rgba(43, 34, 26, 0.22)',
-            }}
-          >
-            <p style={{ margin: '0 0 24px 0', color: '#2B221A', lineHeight: '1.6' }}>
-              {message}
-            </p>
-            <div style={{ display: 'flex', gap: '10px' }}>
+        <div className="confirm-overlay">
+          <div className="confirm-dialog" role="dialog" aria-modal="true">
+            <p className="confirm-message">{message}</p>
+            <div className="panel-actions">
               <button
+                type="button"
                 className="btn btn-secondary"
-                style={{ margin: 0, flex: 1 }}
                 onClick={() => handleAnswer(false)}
               >
                 いいえ
               </button>
               <button
+                type="button"
                 className="btn btn-secondary btn-alert"
-                style={{ margin: 0, flex: 1 }}
                 onClick={() => handleAnswer(true)}
               >
                 はい
@@ -71,6 +51,7 @@ export function ConfirmProvider({ children }) {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useConfirm() {
   const context = useContext(ConfirmContext)
   if (!context) {

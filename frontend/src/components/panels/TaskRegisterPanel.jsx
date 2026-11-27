@@ -1,29 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import FloatingPanel from '../FloatingPanel'
 
-function TaskRegisterPanel({ isOpen, onClose, onSubmit, categoryOptions = [], initialValues}) {
-    const [title, setTitle] = useState('')
+function TaskRegisterForm({ onSubmit, categoryOptions, initialValues }) {
+    const [title, setTitle] = useState(initialValues?.title ?? '')
     const [category, setCategory] = useState('')
     const [dueDate, setDueDate] = useState('')
-    const [frequency, setFrequency] = useState('')
-    const [description, setDescription] = useState('')
-
-    // AIチャットから開かれた時
-    useEffect(() => {
-        if (isOpen && initialValues) {
-            setTitle(initialValues.title ?? '')
-            setFrequency(initialValues.frequency_days ?? '')
-            setDescription(initialValues.description ?? '')
-        }
-    }, [isOpen, initialValues])
-
-    function resetForm() {
-        setTitle('')
-        setCategory('')
-        setDueDate('')
-        setFrequency('')
-        setDescription('')
-    }
+    const [frequency, setFrequency] = useState(initialValues?.frequency_days ?? '')
+    const [description, setDescription] = useState(initialValues?.description ?? '')
 
     function handleSubmit() {
         onSubmit({
@@ -33,17 +16,10 @@ function TaskRegisterPanel({ isOpen, onClose, onSubmit, categoryOptions = [], in
             frequency_days: Number(frequency),
             description: description || null,
         })
-        resetForm()
     }
 
     return (
-        <FloatingPanel
-            title="タスク新規登録"
-            isOpen={isOpen}
-            onClose={onClose}
-            initialTop="15%"
-            initialLeft="10%"
-        >
+        <>
             <div className="form-group">
                 <label>家事の名前</label>
                 <input
@@ -93,9 +69,30 @@ function TaskRegisterPanel({ isOpen, onClose, onSubmit, categoryOptions = [], in
                     onChange={(e) => setFrequency(e.target.value)}
                 />
             </div>
-            <button className="btn" onClick={handleSubmit}>
+            <button type="button" className="btn" onClick={handleSubmit}>
                 登録を確定
             </button>
+        </>
+    )
+}
+
+function TaskRegisterPanel({ isOpen, onClose, onSubmit, categoryOptions = [], initialValues }) {
+    const formKey = `${initialValues?.title ?? ''}-${initialValues?.frequency_days ?? ''}`
+
+    return (
+        <FloatingPanel
+            title="タスク新規登録"
+            isOpen={isOpen}
+            onClose={onClose}
+            initialTop="15%"
+            initialLeft="10%"
+        >
+            <TaskRegisterForm
+                key={formKey}
+                onSubmit={onSubmit}
+                categoryOptions={categoryOptions}
+                initialValues={initialValues}
+            />
         </FloatingPanel>
     )
 }

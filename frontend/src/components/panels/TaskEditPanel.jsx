@@ -1,44 +1,25 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import FloatingPanel from '../FloatingPanel'
 
-function TaskEditPanel({ isOpen, onClose, task, onSubmit, categoryOptions = [] }) {
-    const [title, setTitle] = useState('')
-    const [category, setCategory] = useState('')
-    const [dueDate, setDueDate] = useState('')
-    const [frequency, setFrequency] = useState('')
-    const [description, setDescription] = useState('')
+function TaskEditForm({ task, onSubmit, categoryOptions }) {
+  const [title, setTitle] = useState(task.title ?? '')
+  const [category, setCategory] = useState(task.category ?? '')
+  const [dueDate, setDueDate] = useState(task.next_due_date ?? '')
+  const [frequency, setFrequency] = useState(task.frequency_days ?? '')
+  const [description, setDescription] = useState(task.description ?? '')
 
-    // パネルが開かれるとフォームの値を初期化
-    useEffect(() => {
-        if (task) {
-            setTitle(task.title ?? '')
-            setCategory(task.category ?? '')
-            setDueDate(task.next_due_date ?? '')
-            setFrequency(task.frequency_days ?? '')
-            setDescription(task.description ?? '')
-        }
-    }, [task])
+  function handleSubmit() {
+    onSubmit(task.task_id, {
+      title,
+      category,
+      next_due_date: dueDate || null,
+      frequency_days: Number(frequency),
+      description: description || null,
+    })
+  }
 
-    if (!task) return null
-
-    function handleSubmit() {
-        onSubmit(task.task_id, {
-            title,
-            category,
-            next_due_date: dueDate || null,
-            frequency_days: Number(frequency),
-            description: description || null,
-        })
-    }
-
-    return (
-    <FloatingPanel
-      title="タスク編集"
-      isOpen={isOpen}
-      onClose={onClose}
-      initialTop="25%"
-      initialLeft="35%"
-    >
+  return (
+    <>
       <div className="form-group">
         <label>家事の名前</label>
         <input
@@ -62,7 +43,7 @@ function TaskEditPanel({ isOpen, onClose, task, onSubmit, categoryOptions = [] }
           ))}
         </datalist>
       </div>
-      <div className='form-group'>
+      <div className="form-group">
         <label>説明</label>
         <textarea
           rows={3}
@@ -86,9 +67,30 @@ function TaskEditPanel({ isOpen, onClose, task, onSubmit, categoryOptions = [] }
           onChange={(e) => setFrequency(e.target.value)}
         />
       </div>
-      <button className="btn" onClick={handleSubmit}>
+      <button type="button" className="btn" onClick={handleSubmit}>
         変更を保存
       </button>
+    </>
+  )
+}
+
+function TaskEditPanel({ isOpen, onClose, task, onSubmit, categoryOptions = [] }) {
+  if (!task) return null
+
+  return (
+    <FloatingPanel
+      title="タスク編集"
+      isOpen={isOpen}
+      onClose={onClose}
+      initialTop="25%"
+      initialLeft="35%"
+    >
+      <TaskEditForm
+        key={task.task_id}
+        task={task}
+        onSubmit={onSubmit}
+        categoryOptions={categoryOptions}
+      />
     </FloatingPanel>
   )
 }

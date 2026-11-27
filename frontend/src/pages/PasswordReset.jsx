@@ -49,43 +49,51 @@ function PasswordReset() {
     <div className="container">
       <Header title="びじゅありん" />
       <div className="content">
-        <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>パスワードリセット</h2>
-        <p style={{ fontSize: '0.9em', color: '#666', lineHeight: '1.5' }}>
-          登録しているメールアドレスと、新しいパスワードを入力してください。
-        </p>
+        <div className="auth-sheet">
+          <h2 className="auth-title">パスワードリセット</h2>
+          <p className="auth-lead">
+            登録しているメールアドレスと、新しいパスワードを入力してください。
+          </p>
 
-        <form onSubmit={handleReset} noValidate>
-          <div className="form-group" style={{ marginTop: '20px' }}>
-            <label>メールアドレス</label>
-            <input
-              type="email"
-              placeholder="example@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+          <form onSubmit={handleReset} noValidate>
+            <div className="form-group">
+              <label>メールアドレス</label>
+              <input
+                type="email"
+                placeholder="example@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label>新しいパスワード</label>
+              <input
+                type="password"
+                placeholder="••••••••"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                required
+              />
+            </div>
+
+            {errorMessage ? (
+              <p className="text-alert" style={{ fontSize: '0.9rem', margin: '0 0 14px' }}>
+                {errorMessage}
+              </p>
+            ) : null}
+
+            <button type="submit" className="btn" disabled={isSubmitting}>
+              {isSubmitting ? '送信中...' : 'パスワードを再設定する'}
+            </button>
+          </form>
+
+          <div className="auth-links">
+            <Link to="/login" className="link-text">
+              ログイン画面に戻る
+            </Link>
           </div>
-          <div className="form-group">
-            <label>新しいパスワード</label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          {errorMessage ? (
-            <p style={{ color: '#9E4A34', fontSize: '0.9em' }}>{errorMessage}</p>
-          ) : null}
-
-          <button type="submit" className="btn" disabled={isSubmitting}>
-            {isSubmitting ? '送信中...' : 'パスワードを再設定する'}
-          </button>
-        </form>
-
-        <Link to="/login" className="link-text">ログイン画面に戻る</Link>
+        </div>
       </div>
     </div>
   )
