@@ -1,20 +1,12 @@
 import { useState } from 'react'
 import FloatingPanel from '../FloatingPanel'
 
-function TaskRegisterForm({ onClose, onSubmit, categoryOptions, initialValues }) {
+function TaskRegisterForm({ onSubmit, categoryOptions, initialValues }) {
     const [title, setTitle] = useState(initialValues?.title ?? '')
     const [category, setCategory] = useState('')
     const [dueDate, setDueDate] = useState('')
     const [frequency, setFrequency] = useState(initialValues?.frequency_days ?? '')
     const [description, setDescription] = useState(initialValues?.description ?? '')
-
-    function resetForm() {
-        setTitle('')
-        setCategory('')
-        setDueDate('')
-        setFrequency('')
-        setDescription('')
-    }
 
     function handleSubmit() {
         onSubmit({
@@ -24,17 +16,10 @@ function TaskRegisterForm({ onClose, onSubmit, categoryOptions, initialValues })
             frequency_days: Number(frequency),
             description: description || null,
         })
-        resetForm()
     }
 
     return (
-        <FloatingPanel
-            title="タスク新規登録"
-            isOpen
-            onClose={onClose}
-            initialTop="15%"
-            initialLeft="10%"
-        >
+        <>
             <div className="form-group">
                 <label>家事の名前</label>
                 <input
@@ -84,28 +69,33 @@ function TaskRegisterForm({ onClose, onSubmit, categoryOptions, initialValues })
                     onChange={(e) => setFrequency(e.target.value)}
                 />
             </div>
-            <button className="btn" onClick={handleSubmit}>
+            <button type="button" className="btn" onClick={handleSubmit}>
                 登録を確定
             </button>
-        </FloatingPanel>
+        </>
     )
 }
 
 function TaskRegisterPanel({ isOpen, onClose, onSubmit, categoryOptions = [], initialValues }) {
-    if (!isOpen) return null
-
     const formKey = initialValues
         ? `${initialValues.title ?? ''}-${initialValues.frequency_days ?? ''}-${initialValues.description ?? ''}`
         : 'new'
 
     return (
-        <TaskRegisterForm
-            key={formKey}
+        <FloatingPanel
+            title="タスク新規登録"
+            isOpen={isOpen}
             onClose={onClose}
-            onSubmit={onSubmit}
-            categoryOptions={categoryOptions}
-            initialValues={initialValues}
-        />
+            initialTop="15%"
+            initialLeft="10%"
+        >
+            <TaskRegisterForm
+                key={formKey}
+                onSubmit={onSubmit}
+                categoryOptions={categoryOptions}
+                initialValues={initialValues}
+            />
+        </FloatingPanel>
     )
 }
 

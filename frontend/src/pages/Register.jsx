@@ -41,7 +41,11 @@ function Register() {
 
     setIsSubmitting(true)
     try {
-      const data = await apiPost('/api/auth/register', { name: name.trim(), email: email.trim(), password })
+      const data = await apiPost('/api/auth/register', {
+        name: name.trim(),
+        email: email.trim(),
+        password,
+      })
       saveToken(data.access_token)
       navigate('/register-complete')
     } catch (err) {
@@ -55,60 +59,68 @@ function Register() {
     <div className="container">
       <Header title="びじゅありん" />
       <div className="content">
-        <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>新規アカウント登録</h2>
+        <div className="auth-sheet">
+          <h2 className="auth-title">新規アカウント登録</h2>
 
-        <form onSubmit={handleRegister} noValidate>
-          <div className="form-group">
-            <label>ユーザー名</label>
-            <input
-              type="text"
-              placeholder="例：タロウ"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label>メールアドレス</label>
-            <input
-              type="email"
-              placeholder="example@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label>パスワード</label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label>パスワード（確認用）</label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              value={passwordConfirm}
-              onChange={(e) => setPasswordConfirm(e.target.value)}
-              required
-            />
-          </div>
+          <form onSubmit={handleRegister} noValidate>
+            <div className="form-group">
+              <label>ユーザー名</label>
+              <input
+                type="text"
+                placeholder="例：タロウ"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label>メールアドレス</label>
+              <input
+                type="email"
+                placeholder="example@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label>パスワード</label>
+              <input
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label>パスワード（確認用）</label>
+              <input
+                type="password"
+                placeholder="••••••••"
+                value={passwordConfirm}
+                onChange={(e) => setPasswordConfirm(e.target.value)}
+                required
+              />
+            </div>
 
-          {errorMessage ? (
-            <p style={{ color: '#9E4A34', fontSize: '0.9em' }}>{errorMessage}</p>
-          ) : null}
+            {errorMessage ? (
+              <p className="text-alert" style={{ fontSize: '0.9rem', margin: '0 0 14px' }}>
+                {errorMessage}
+              </p>
+            ) : null}
 
-          <button type="submit" className="btn" disabled={isSubmitting}>
-            {isSubmitting ? '登録中...' : 'アカウントを作成'}
-          </button>
-        </form>
+            <button type="submit" className="btn" disabled={isSubmitting}>
+              {isSubmitting ? '登録中...' : 'アカウントを作成'}
+            </button>
+          </form>
 
-        <Link to="/login" className="link-text">すでにアカウントをお持ちの方（ログイン）</Link>
+          <div className="auth-links">
+            <Link to="/login" className="link-text">
+              すでにアカウントをお持ちの方（ログイン）
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   )

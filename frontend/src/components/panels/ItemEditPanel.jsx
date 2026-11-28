@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import FloatingPanel from '../FloatingPanel'
 
-function ItemEditForm({ onClose, item, onSubmit, categoryOptions }) {
+function ItemEditForm({ item, onSubmit, categoryOptions }) {
   const [name, setName] = useState(item.name ?? '')
   const [currentStock, setCurrentStock] = useState(item.current_stock ?? 0)
   const [alertThreshold, setAlertThreshold] = useState(item.alert_threshold ?? 0)
@@ -19,13 +19,7 @@ function ItemEditForm({ onClose, item, onSubmit, categoryOptions }) {
   }
 
   return (
-    <FloatingPanel
-      title="消耗品情報の変更"
-      isOpen
-      onClose={onClose}
-      initialTop="25%"
-      initialLeft="40%"
-    >
+    <>
       <div className="form-group">
         <label>消耗品の名前</label>
         <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
@@ -58,35 +52,42 @@ function ItemEditForm({ onClose, item, onSubmit, categoryOptions }) {
         <label>カテゴリ</label>
         <input
           type="text"
-          list="item-category-options"
+          list="item-category-options-edit"
           placeholder="例：キッチン"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
         />
-        <datalist id="item-category-options">
+        <datalist id="item-category-options-edit">
           {categoryOptions.map((c) => (
             <option key={c} value={c} />
           ))}
         </datalist>
       </div>
-      <button className="btn" onClick={handleSubmit}>
+      <button type="button" className="btn" onClick={handleSubmit}>
         変更を保存
       </button>
-    </FloatingPanel>
+    </>
   )
 }
 
 function ItemEditPanel({ isOpen, onClose, item, onSubmit, categoryOptions = [] }) {
-  if (!isOpen || !item) return null
+  if (!item) return null
 
   return (
-    <ItemEditForm
-      key={item.item_id}
+    <FloatingPanel
+      title="消耗品情報の変更"
+      isOpen={isOpen}
       onClose={onClose}
-      item={item}
-      onSubmit={onSubmit}
-      categoryOptions={categoryOptions}
-    />
+      initialTop="25%"
+      initialLeft="40%"
+    >
+      <ItemEditForm
+        key={item.item_id}
+        item={item}
+        onSubmit={onSubmit}
+        categoryOptions={categoryOptions}
+      />
+    </FloatingPanel>
   )
 }
 

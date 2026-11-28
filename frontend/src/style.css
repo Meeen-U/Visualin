@@ -1,301 +1,604 @@
 /* =========================================
-   カスタムフォント（木漏れ日ゴシック）
+   家事タスク管理アプリ - ノート＋付箋版（v2）
+   意図: 「ノートに付箋を貼っていく」イメージは残す。
+         ただし使いづらさの原因だった
+         ・ノート自体の傾き
+         ・濃すぎる罫線と60pxの左余白
+         ・行間1.0、スマホではみ出す固定幅
+         は直す。付箋だけを少しだけ傾けて、貼った感を出す。
+   既存クラス名はそのまま使えます。
    ========================================= */
+
 @font-face {
     font-family: 'KomorebiGothic';
     src: url('./fonts/komorebi-gothic.ttf') format('truetype');
+    font-display: swap;
 }
 
-/* =========================================
-   ベーススタイル：無難な配色を捨て、深みと濁りのあるヴィンテージトーンへ
-   ========================================= */
+:root {
+    --desk: #D8CFC0;          /* 机 */
+    --paper: #FDFBF5;         /* ノートの紙 */
+    --paper-line: rgba(122,153,158,.16);
+    --margin-line: rgba(194,142,133,.55);
+    --ink: #2B221A;
+    --ink-soft: #6E6055;
+    --border: #D9CFC0;
+
+    /* 付箋の色（意味で使い分け） */
+    --sticky-yellow: #FFF3B8; /* 通常のタスク */
+    --sticky-yellow-edge: #EAD98A;
+    --sticky-pink: #FFDDE3;   /* 期限切れ・急ぎ */
+    --sticky-pink-edge: #E8A8B5;
+    --sticky-mint: #DDF2E3;   /* 完了 */
+    --sticky-mint-edge: #A8D5B8;
+    --sticky-blue: #DDEBF7;   /* メモ・消耗品 */
+    --sticky-blue-edge: #A8C4E0;
+
+    --accent: #2F7D6B;
+    --danger: #C94C3D;
+    --radius: 6px;            /* 紙ものらしく控えめな角丸 */
+    --tap: 44px;
+    --line: 32px;             /* 罫線の間隔 = 行の高さ */
+}
+
+* { box-sizing: border-box; }
+
 body {
-    font-family: 'KomorebiGothic', 'Yu Gothic', sans-serif;
-    background-color: #D1C9BF; /* 古いリネンのクロスのような、少し濁りのあるグレージュ */
+    font-family: 'KomorebiGothic', 'Hiragino Sans', 'Noto Sans JP', 'Yu Gothic', sans-serif;
+    background: var(--desk);
     margin: 0;
-    padding: 0;
-    color: #2B221A; /* 焦がしたコーヒー豆の深い黒茶 */
-    line-height: 1.0;
+    color: var(--ink);
+    line-height: 1.6;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
 }
+
 .container {
-    max-width: 1280px;
+    max-width: 1200px;
     margin: 0 auto;
-    background-color: #E6E0D4; /* ワークデスクをイメージした木陰のトーン */
     min-height: 100vh;
-    box-shadow: inset 0 0 100px rgba(43, 34, 26, 0.05), 0 0 30px rgba(0,0,0,0.1);
-    position: relative;
-    padding-bottom: 60px;
+    padding-bottom: 80px;
 }
+
+/* ヘッダー: 机の上の名札のように、紙色＋下線 */
 header {
-    background-color: #2B221A;
-    color: #ECE6D9;
-    padding: 20px 30px;
-    text-align: left;
-    font-size: 1.2em;
-    font-weight: bold;
-    letter-spacing: 3px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 4px solid #1A1410;
+    position: sticky; top: 0; z-index: 100;
+    background: var(--paper);
+    color: var(--ink);
+    padding: 14px 20px;
+    font-size: 1.15rem; font-weight: 700; letter-spacing: .04em;
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    border-bottom: 2px solid var(--ink);
+    box-shadow: 0 2px 10px rgba(43,34,26,.08);
 }
 header a {
-    color: #A69485;
-    text-decoration: none;
-    font-size: 0.8em;
-    border-bottom: 1px dashed #A69485;
-    padding-bottom: 2px;
+    color: var(--ink-soft); text-decoration: none; font-size: .9rem; font-weight: 600;
+    padding: 8px 14px; min-height: var(--tap); display: inline-flex; align-items: center;
+    border: 1.5px solid var(--border); border-radius: 999px; background: #fff;
+    white-space: nowrap;
 }
-.content {
-    padding: 40px 30px;
+header a:hover { border-color: var(--ink); color: var(--ink); }
+
+.header-side {
+    display: flex;
+    align-items: center;
+    min-width: 0;
 }
 
+.content { padding: 28px 20px 20px; }
+
 /* =========================================
-   ★整列の破壊：ラフに広げられた3冊のルーズリーフ
+   ノート3冊: 本体はまっすぐ置く（傾けない）
+   傾けるのは付箋だけにするのが使いやすさのコツ
    ========================================= */
 .dashboard-grid {
-    display: flex;
-    gap: 35px;
-    flex-wrap: wrap;
-    align-items: flex-start;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px 24px;
+    align-items: start;
+}
+@media (max-width: 1024px) { .dashboard-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 720px) {
+    .dashboard-grid { grid-template-columns: 1fr; gap: 32px; }
+    .content { padding: 24px 12px 16px; }
 }
 
-/* 共通のノート基盤（かすれた罫線とマージン線） */
-.dashboard-col {
-    flex: 1;
-    min-width: 350px;
-    background-color: #FDFBF7; /* 経年変化で少し黄ばんだ紙の白 */
-    border: 1px solid #BFAFA3;
+.dashboard-col,
+.auth-sheet {
     position: relative;
-    padding: 35px 20px 30px 60px;
-    box-sizing: border-box;
-    
-    /* 万年筆で引いたような、少し切ないブルーブラックの罫線とセピアのマージン線 */
-    background-image: 
-        linear-gradient(90deg, transparent 45px, #C28E85 45px, #C28E85 46px, transparent 46px),
-        linear-gradient(transparent 31px, rgba(122, 153, 158, 0.18) 31px, rgba(122, 153, 158, 0.18) 32px);
-    background-size: 100% 100%, 100% 32px;
+    background-color: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 4px 4px var(--radius) var(--radius);
+    /* 左余白は60px→40pxに。スマホではさらに狭くする */
+    padding: 28px 18px 24px 40px;
+    min-width: 0;
+    box-shadow: 0 4px 14px rgba(43,34,26,.10), 0 12px 32px rgba(43,34,26,.06);
+    /* 薄い罫線とマージン線。文字の行と重ならないよう薄く */
+    background-image:
+        linear-gradient(90deg, transparent 30px, var(--margin-line) 30px, var(--margin-line) 31px, transparent 31px),
+        linear-gradient(transparent calc(var(--line) - 1px), var(--paper-line) calc(var(--line) - 1px), var(--paper-line) var(--line));
+    background-size: 100% 100%, 100% var(--line);
+}
+@media (max-width: 720px) {
+    .dashboard-col,
+    .auth-sheet {
+        padding-left: 28px;
+        background-image:
+            linear-gradient(90deg, transparent 20px, var(--margin-line) 20px, var(--margin-line) 21px, transparent 21px),
+            linear-gradient(transparent calc(var(--line) - 1px), var(--paper-line) calc(var(--line) - 1px), var(--paper-line) var(--line));
+    }
 }
 
-/* 1冊目のノート：左に少し傾ける */
-.dashboard-grid > .dashboard-col:nth-child(1) {
-    transform: rotate(-1.2deg);
-    margin-top: 15px;
-    box-shadow: -5px 8px 20px rgba(43, 34, 26, 0.08);
-}
-/* 2冊目のノート：右に少し傾け、位置をずらす */
-.dashboard-grid > .dashboard-col:nth-child(2) {
-    transform: rotate(1deg);
-    margin-top: 5px;
-    box-shadow: 5px 10px 22px rgba(43, 34, 26, 0.09);
-}
-/* 3冊目のノート（AIチャット）：キャレットを表示させたいので変えない */
-.dashboard-grid > .dashboard-col:nth-child(3) {
-    margin-top: 25px;
-    box-shadow: 2px 12px 25px rgba(43, 34, 26, 0.07);
-}
-
-/* 上綴じダブルリングのリアルな金属質感（穴の不均一な影） */
-.dashboard-col::before {
+/* ダブルリング: 残すけど、うるさくない細さに */
+.dashboard-col::before,
+.auth-sheet::before {
     content: '';
     position: absolute;
-    top: -24px;
-    left: 20px;
-    right: 20px;
-    height: 32px;
-    background-image: 
-        linear-gradient(to right, transparent 2px, #59524C 2px, #A69E97 5px, #59524C 7px, transparent 7px),
-        linear-gradient(to right, transparent 10px, #59524C 10px, #A69E97 11px, #59524C 13px, transparent 13px),
-        radial-gradient(circle at 4px 25px, #2B221A 3.5px, transparent 3.5px),
-        radial-gradient(circle at 12px 25px, #2B221A 3.5px, transparent 3.5px);
-    background-size: 26px 100%;
-    z-index: 10;
+    top: -14px; left: 16px; right: 16px; height: 22px;
+    background-image:
+        linear-gradient(to right, transparent 3px, #8A8178 3px, #C9C0B4 5px, #8A8178 7px, transparent 7px),
+        radial-gradient(circle at 5px 16px, var(--ink) 3px, transparent 3.2px);
+    background-size: 24px 100%;
+    opacity: .85;
+    pointer-events: none;
 }
+/* ノート本体の傾きは廃止 */
+.dashboard-grid > .dashboard-col:nth-child(1),
+.dashboard-grid > .dashboard-col:nth-child(2),
+.dashboard-grid > .dashboard-col:nth-child(3) { transform: none; margin-top: 0; }
 
-/* 手書きのような無骨なタイトルライン */
-.col-title {
-    font-size: 1.4em;
-    margin-top: 0;
-    margin-bottom: 28px;
-    font-weight: bold;
-    letter-spacing: 0.5px;
-    line-height: 32px;
+/* 認証ページ用の1冊ノート */
+.auth-sheet {
+    max-width: 480px;
+    margin: 12px auto 0;
+    padding-right: 24px;
 }
-.title-task { color: #2B221A; border-bottom: 2px solid #2B221A; display: inline-block; padding-right: 15px; }
-.title-item { color: #9E4A34; border-bottom: 2px solid #9E4A34; display: inline-block; padding-right: 15px; }
-
-/* =========================================
-   ★デザインの本詰め：紙の重なりを感じるカード（付箋）
-   ========================================= */
-/* タスクカード：右下が浮き上がって影が斜めに流れるリアルな付箋 */
-.card-task {
-    background-color: #FFFDF0; /* 生なりの付箋紙 */
-    border: 1px solid #E3D4BC;
-    padding: 20px;
-    margin-bottom: 25px;
-    position: relative;
-    /* 複数の影をずらして重ねることで、右下の浮き上がりを表現 */
-    box-shadow: 2px 2px 5px rgba(43,34,26,0.04), 5px 10px 15px rgba(43,34,26,0.06);
-    transform: rotate(0.8deg); /* ノートに対してさらに少し傾ける */
-    margin-left: -5px;
+.auth-title {
+    font-size: 1.3rem;
+    margin: 0 0 18px;
+    font-weight: 700;
+    line-height: var(--line);
+    text-align: center;
 }
-/* 消耗品カード：ラフにちぎった厚紙のメモ */
-.card-item-alert {
-    background-color: #FFFFFF;
-    border: 1px solid #D6CDC4;
-    border-left: 6px solid #9E4A34; /* 濁りのある赤 */
-    padding: 20px;
-    margin-bottom: 25px;
-    box-shadow: 3px 5px 12px rgba(0, 0, 0, 0.04);
-    transform: rotate(-0.6deg);
-    margin-right: -5px;
+.auth-lead {
+    font-size: .92rem;
+    color: var(--ink-soft);
+    margin: 0 0 18px;
+    line-height: 1.6;
 }
-
-.card-title { font-weight: bold; font-size: 1.15em; margin: 0 0 10px 0; color: #2B221A; letter-spacing: 0.5px; }
-.card-meta { font-size: 0.9em; color: #6E6055; margin: 0 0 15px 0; }
-
-/* =========================================
-   フォーム・ボタン：直線的で無骨な文房具のディテール
-   ========================================= */
-.form-group { margin-bottom: 18px; }
-label { display: block; margin-bottom: 6px; font-weight: bold; color: #40342B; font-size: 0.95em; }
-
-input[type="text"], input[type="number"], input[type="date"], select, textarea {
-    width: 100%; padding: 11px; border: 1px solid #A69A8F; border-radius: 0px; box-sizing: border-box; font-family: inherit;
-    background-color: #FAFAFD; color: #2B221A; font-size: 0.95em;
+.auth-links {
+    margin-top: 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
 }
-input:focus, select:focus, textarea:focus {
-    outline: none; border-color: #2B221A; background-color: #FFFFFF; box-shadow: 2px 2px 0px #2B221A;
-    caret-color: #9E4A34;
+.link-text {
+    display: inline-flex;
+    align-items: center;
+    min-height: 38px;
+    color: var(--ink-soft);
+    font-size: .9rem;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 4px;
 }
-
-
-/* AIチャット入力欄のカーソル */
-/*
-input[type="text"],input[type="number"],input[type="date"],textarea, .chat-input-area input {
-    caret-color: #9E4A34;
-    caret-shape: block;
-}
-
-
-/* ボタンも整然とした角丸を廃止し、スタンプを押したようなソリッドな四角に */
-.btn {
-    display: block; width: 100%; padding: 13px; background-color: #40342B; color: #FDFBF7; border: 1px solid #2B221A; border-radius: 0px; font-size: 1em; font-weight: bold; cursor: pointer; text-align: center; text-decoration: none; box-sizing: border-box; margin-top: 10px; font-family: inherit;
-}
-.btn:hover { background-color: #2B221A; }
-.btn-secondary { background-color: #EFECE6; color: #2B221A; border: 1px solid #A69A8F; }
-.btn-secondary:hover { background-color: #E2DDD5; }
-
-.flex-between { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.link-text:hover { color: var(--ink); }
 
 .col-header {
-    margin-bottom: 16px;
+    margin-bottom: 20px;
 }
 .col-header .col-title {
     margin-bottom: 12px;
 }
+
+.col-title {
+    font-size: 1.25rem; margin: 0 0 18px; font-weight: 700;
+    line-height: var(--line);
+    display: flex; align-items: center; flex-wrap: wrap; gap: 4px;
+}
+.title-task, .title-item {
+    display: inline-block; padding-right: 12px;
+    border-bottom: 3px solid currentColor;
+}
+.title-task { color: var(--ink); }
+.title-item { color: var(--danger); }
+
+/* 絞り込みバー */
 .filter-bar {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 8px;
 }
+
+/* =========================================
+   付箋カード: テープ＋ほんの少しの傾き
+   ホバー／フォーカスでまっすぐになって読みやすく
+   ========================================= */
+.card-task, .card-item-alert {
+    position: relative;
+    padding: 18px 16px 16px;
+    margin-bottom: 18px;
+    border-radius: 2px 2px 8px 2px; /* 右下だけ少しめくれた感じ */
+    box-shadow: 0 2px 4px rgba(43,34,26,.08), 0 8px 16px rgba(43,34,26,.08);
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+/* テープ */
+.card-task::before, .card-item-alert::before {
+    content: '';
+    position: absolute;
+    top: -10px; left: 50%;
+    width: 72px; height: 20px;
+    transform: translateX(-50%) rotate(-1deg);
+    background: rgba(255,255,255,.55);
+    border-left: 1px dashed rgba(43,34,26,.12);
+    border-right: 1px dashed rgba(43,34,26,.12);
+    backdrop-filter: blur(1px);
+    pointer-events: none;
+}
+
+.card-task {
+    background: var(--sticky-yellow);
+    border: 1px solid var(--sticky-yellow-edge);
+    transform: rotate(-.5deg);
+}
+.card-task:nth-child(even) { transform: rotate(.4deg); }
+.card-task:hover, .card-task:focus-within {
+    transform: rotate(0deg);
+    box-shadow: 0 4px 8px rgba(43,34,26,.10), 0 14px 28px rgba(43,34,26,.12);
+    z-index: 1;
+}
+
+/* 状態で付箋の色を変える */
+.card-task.is-today   { background: var(--sticky-yellow); border-color: var(--sticky-yellow-edge); }
+.card-task.is-overdue { background: var(--sticky-pink); border-color: var(--sticky-pink-edge); }
+.card-task.is-done {
+    background: var(--sticky-mint); border-color: var(--sticky-mint-edge);
+    opacity: .75; transform: rotate(0deg);
+}
+.card-task.is-done .card-title { text-decoration: line-through; }
+.card-task.is-item {
+    background: var(--sticky-blue);
+    border-color: var(--sticky-blue-edge);
+}
+
+/* 消耗品アラートは白いメモ用紙＋赤い左線 */
+.card-item-alert {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-left: 6px solid var(--danger);
+    transform: rotate(.4deg);
+}
+.card-item-alert:hover, .card-item-alert:focus-within { transform: rotate(0deg); }
+
+.card-title { font-weight: 700; font-size: 1.05rem; margin: 0 0 6px; line-height: 1.45; }
+.card-meta  { font-size: .88rem; color: var(--ink-soft); margin: 0 0 12px; }
+.card-desc  {
+    font-size: .9rem;
+    color: var(--ink);
+    margin: 0 0 12px;
+    line-height: 1.6;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed rgba(43,34,26,.2);
+}
+.card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+.card-tags .tag { margin-bottom: 0; }
+
+.card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+.card-actions .btn {
+    width: auto;
+    flex: 1 1 auto;
+    min-height: 40px;
+    padding: 8px 12px;
+    font-size: .88rem;
+}
+
+.card-task input[type="checkbox"] {
+    width: 24px; height: 24px; accent-color: var(--accent);
+    cursor: pointer; flex: none;
+}
+
+/* =========================================
+   フォーム・ボタン: スタンプっぽさは残しつつ押しやすく
+   ========================================= */
+.form-group { margin-bottom: 14px; }
+label { display: block; margin-bottom: 6px; font-weight: 700; font-size: .92rem; }
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+select,
+textarea {
+    width: 100%; padding: 12px 14px;
+    border: 1.5px solid #B9AFA1; border-radius: 6px;
+    font-family: inherit; background: #fff; color: var(--ink);
+    font-size: 1rem; min-height: var(--tap);
+}
+textarea { min-height: 88px; resize: vertical; }
+input:focus, select:focus, textarea:focus {
+    outline: none; border-color: var(--ink);
+    box-shadow: 3px 3px 0 rgba(43,34,26,.85);
+    caret-color: var(--danger);
+}
+:focus-visible { outline: 3px solid rgba(47,125,107,.35); outline-offset: 2px; }
+
 .filter-select {
     width: auto;
-    font-size: 0.85em;
-    padding: 4px 8px;
+    flex: 1 1 130px;
+    min-height: 40px;
+    padding: 6px 10px;
+    font-size: .88rem;
 }
 .filter-toggle {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     margin: 0;
-    padding: 4px 8px;
-    font-size: 0.85em;
-    font-weight: normal;
-    color: #40342B;
-    background-color: #FAFAFD;
-    border: 1px solid #A69A8F;
+    min-height: 40px;
+    padding: 6px 12px;
+    font-size: .88rem;
+    font-weight: 600;
+    color: var(--ink);
+    background: #fff;
+    border: 1.5px solid #B9AFA1;
+    border-radius: var(--radius);
     cursor: pointer;
     user-select: none;
 }
 .filter-toggle input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
     margin: 0;
-    accent-color: #9E4A34;
+    accent-color: var(--danger);
     cursor: pointer;
 }
 
-.list-pager {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-    margin-top: 16px;
-    flex-wrap: wrap;
+.btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; min-height: var(--tap); padding: 12px 20px;
+    background: var(--ink); color: var(--paper);
+    border: 2px solid var(--ink); border-radius: 6px;
+    font-size: 1rem; font-weight: 700; cursor: pointer;
+    text-decoration: none; font-family: inherit;
+    box-shadow: 3px 3px 0 rgba(43,34,26,.25);
+    transition: transform .05s ease, box-shadow .05s ease, background .15s ease;
 }
-.list-pager-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.list-pager .btn {
-    width: auto;
-    display: inline-block;
-    margin-top: 0;
-}
-.list-pager .btn:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-}
-.list-pager-meta,
-.list-pager-page {
-    font-size: 0.8em;
-    color: #6E6055;
-    white-space: nowrap;
-}
-.badge { background-color: #9E4A34; color: white; padding: 2px 7px; font-size: 0.75em; font-weight: bold; margin-left: 6px; }
-.tag { display: inline-block; background: #EBE6DC; color: #40342B; padding: 3px 10px; font-size: 0.8em; margin-bottom: 15px; border: 1px solid #D1C9BF; }
+.btn:hover { background: #3D332A; }
+.btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 rgba(43,34,26,.25); }
+.btn:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; }
 
-/* =========================================
-   フローティングウィンドウ（手帳のインデックス、別紙の重ね合わせ）
-   ========================================= */
+.btn-secondary { background: #fff; color: var(--ink); border-color: #B9AFA1; box-shadow: 3px 3px 0 rgba(43,34,26,.12); }
+.btn-secondary:hover { background: var(--paper); }
+
+.btn-accent { background: var(--accent); color: #fff; border-color: var(--ink); }
+.btn-accent:hover { background: #266859; }
+
+.btn-alert { color: var(--danger); border-color: var(--danger); background: #fff; }
+.btn-alert:hover { background: #FFF5F3; }
+
+.flex-between { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.list-pager { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+.list-pager-actions { display: flex; align-items: center; gap: 8px; }
+.list-pager .btn { width: auto; min-height: 38px; padding: 6px 12px; font-size: .85rem; }
+.list-pager-meta, .list-pager-page { font-size: .8rem; color: var(--ink-soft); white-space: nowrap; }
+
+.badge {
+    background: var(--danger); color: #fff; padding: 2px 8px;
+    font-size: .72rem; font-weight: 700; border-radius: 999px; margin-left: 6px;
+    line-height: 1.5;
+}
+.tag {
+    display: inline-block; background: #fff; color: var(--ink);
+    padding: 4px 10px; font-size: .78rem; font-weight: 600;
+    border: 1.5px solid var(--ink); border-radius: 999px; margin-bottom: 10px;
+    transform: rotate(-1deg);
+}
+.tag-alert {
+    background: var(--sticky-pink);
+    color: var(--danger);
+    border-color: var(--danger);
+}
+.text-alert { color: var(--danger); font-weight: 700; }
+
+/* フローティングパネル: 別紙のメモ */
 .floating-panel {
-    display: none; position: fixed; background-color: #FFFFFF; width: 370px; border-radius: 0px; box-shadow: 10px 15px 35px rgba(43, 34, 26, 0.22); border: 2px solid #2B221A; z-index: 1000; overflow: hidden; animation: popIn 0.12s ease-out;
+    display: none; position: fixed;
+    background: var(--paper);
+    width: min(370px, calc(100vw - 32px));
+    border-radius: 6px;
+    box-shadow: 0 16px 48px rgba(43,34,26,.22);
+    border: 2px solid var(--ink); z-index: 1000; overflow: hidden;
+    animation: popIn .15s ease-out;
 }
 .panel-header {
-    background-color: #EFECE6; padding: 14px 20px; cursor: grab; font-weight: bold; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #2B221A; color: #2B221A; font-size: 0.95em;
+    background: #EFE9DC; padding: 10px 12px 10px 16px; cursor: grab; font-weight: 700;
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 2px solid var(--ink);
+    user-select: none;
 }
 .panel-header:active { cursor: grabbing; }
-.panel-close { cursor: pointer; font-size: 1.4em; color: #6E6055; }
-.panel-close:hover { color: #9E4A34; }
-.panel-content { padding: 22px; }
+.panel-close {
+    cursor: pointer; font-size: 1.4rem; color: var(--ink-soft);
+    width: var(--tap); height: var(--tap);
+    display: inline-flex; align-items: center; justify-content: center; border-radius: 50%;
+    background: transparent; border: none; font-family: inherit; line-height: 1; padding: 0;
+}
+.panel-close:hover { color: var(--danger); background: rgba(201,76,61,.08); }
+.panel-content { padding: 18px; max-height: calc(100vh - 160px); overflow-y: auto; }
+.panel-item-title { margin: 0 0 10px; color: var(--ink); font-size: 1.15rem; }
+.panel-detail-row { margin: 0 0 8px; font-size: .95rem; }
+.panel-detail-desc { margin: 0 0 18px; font-size: .95rem; color: var(--ink-soft); line-height: 1.6; }
+.panel-actions { display: flex; gap: 10px; margin-top: 16px; }
+.panel-actions .btn { flex: 1; width: auto; }
 
-@keyframes popIn { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
+.ai-advice-box {
+    margin-top: 12px;
+    font-size: .9rem;
+    color: var(--ink);
+    background: var(--sticky-yellow);
+    border: 1px solid var(--sticky-yellow-edge);
+    border-radius: 2px 2px 8px 2px;
+    padding: 12px 14px;
+    line-height: 1.6;
+}
 
-/* =========================================
-   ★AIチャット（手帳のスクラップ置き場のような無骨な枠）
-   ========================================= */
-.chat-container { display: flex; flex-direction: column; height: 530px; border: 2px solid #40342B; background-color: #FFFFFF; margin-top: 15px; box-shadow: 4px 4px 0px rgba(64, 52, 43, 0.1); }
-.chat-header { background-color: #40342B; color: #FDFBF7; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 0.95em; }
-.chat-new-btn { background-color: transparent; border: 1px solid rgba(253,251,247,0.4); color: #FDFBF7; padding: 4px 14px; font-size: 0.8em; cursor: pointer; font-family: inherit; }
-.chat-new-btn:hover { background-color: rgba(253,251,247,0.1); border-color: #FDFBF7; }
-.chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 18px; background-color: #F5F2EB; }
+@keyframes popIn { from { opacity: 0; transform: translateY(6px) scale(.98); } to { opacity: 1; transform: none; } }
 
-/* 完璧な丸みを排除。ちぎったメモ用紙を交互に並べたような配置 */
-.chat-bubble { max-width: 85%; padding: 14px 18px; border-radius: 0px; font-size: 0.95em; line-height: 1.6; word-break: break-all; box-shadow: 2px 2px 6px rgba(0,0,0,0.04); border: 1px solid #D6CDC4; }
-.chat-user { align-self: flex-end; background-color: #594C40; color: #FDFBF7; border: 1px solid #2B221A; }
-.chat-ai { align-self: flex-start; background-color: #FFFFFF; color: #2B221A; }
+/* 確認ダイアログ */
+.confirm-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(43,34,26,.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 5000;
+}
+.confirm-dialog {
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: var(--radius);
+    padding: 24px;
+    width: min(340px, calc(100vw - 32px));
+    box-shadow: 0 16px 48px rgba(43,34,26,.22);
+    animation: popIn .15s ease-out;
+}
+.confirm-message {
+    margin: 0 0 20px;
+    color: var(--ink);
+    line-height: 1.6;
+    font-weight: 600;
+}
 
-.chat-input-area { display: flex; padding: 15px; background-color: #FFFFFF; border-top: 2px solid #40342B; gap: 12px; }
+/* AIチャット: ノートの端のメモ置き場 */
+.chat-container {
+    display: flex; flex-direction: column;
+    height: min(530px, calc(100vh - 240px)); min-height: 320px;
+    border: 2px solid var(--ink); border-radius: 6px;
+    background: #fff; margin-top: 12px; overflow: hidden;
+    box-shadow: 4px 4px 0 rgba(43,34,26,.12);
+}
+.chat-header {
+    background: var(--ink); color: var(--paper);
+    padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;
+    font-weight: 700; font-size: .95rem;
+}
+.chat-new-btn {
+    background: transparent; border: 1.5px solid rgba(253,251,245,.5); color: var(--paper);
+    padding: 7px 14px; font-size: .85rem; font-weight: 600;
+    border-radius: 999px; cursor: pointer; font-family: inherit; min-height: 36px;
+}
+.chat-new-btn:hover { background: rgba(253,251,245,.12); }
+.chat-messages {
+    flex: 1; padding: 16px; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 12px;
+    background: var(--paper);
+    background-image: linear-gradient(transparent calc(var(--line) - 1px), var(--paper-line) calc(var(--line) - 1px), var(--paper-line) var(--line));
+    background-size: 100% var(--line);
+}
+.chat-bubble {
+    max-width: 85%; padding: 10px 14px; border-radius: 4px 4px 10px 4px;
+    font-size: .95rem; line-height: 1.6; word-break: break-word; overflow-wrap: anywhere;
+    box-shadow: 0 2px 6px rgba(43,34,26,.08);
+}
+.chat-user { align-self: flex-end; background: var(--sticky-yellow); border: 1px solid var(--sticky-yellow-edge); transform: rotate(.3deg); }
+.chat-ai   { align-self: flex-start; background: #fff; border: 1px solid var(--border); transform: rotate(-.3deg); }
+
+.chat-subtask {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    background: var(--paper);
+    margin-top: 10px;
+}
+.chat-subtask-title {
+    font-weight: 700;
+    font-size: .9rem;
+}
+.chat-subtask-desc {
+    font-size: .85rem;
+    color: var(--ink-soft);
+    margin: 4px 0 0;
+}
+.chat-subtask .btn {
+    width: auto;
+    min-height: 36px;
+    padding: 6px 12px;
+    font-size: .82rem;
+    margin-top: 8px;
+}
+
+.chat-season-bar {
+    padding: 8px 12px;
+    background: #fff;
+    border-top: 1px dashed var(--border);
+}
+.chat-season-trigger {
+    width: 100%;
+    min-height: 38px;
+    padding: 6px 14px;
+    font-size: .85rem;
+    font-weight: 700;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1.5px dashed #B9AFA1;
+    border-radius: 999px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background .15s ease, border-color .15s ease;
+}
+.chat-season-trigger:hover {
+    background: var(--sticky-yellow);
+    border-color: var(--ink);
+    border-style: solid;
+}
+.chat-season-form {
+    padding: 14px;
+    border-top: 2px solid var(--ink);
+    background: #EFE9DC;
+}
+
+.chat-input-area { display: flex; padding: 12px; background: #fff; border-top: 2px solid var(--ink); gap: 8px; }
 .chat-input-area input { flex: 1; margin-bottom: 0; }
-.chat-input-area button { width: auto; margin-top: 0; background-color: #40342B; padding: 10px 24px; border: 1px solid #2B221A; }
+.chat-input-area button { width: auto; flex: none; }
 
-/* トースト通知 */
-#toast-container { position: fixed; bottom: 40px; right: 40px; z-index: 9999; display: flex; flex-direction: column; gap: 15px; pointer-events: none; }
-.toast-msg { background-color: #2B221A; color: #FDFBF7; padding: 15px 30px; border-radius: 0px; box-shadow: 5px 10px 25px rgba(0,0,0,0.15); font-size: 0.95em; opacity: 0; transform: translateY(20px); animation: showToast 0.25s forwards, hideToast 0.25s forwards 2.5s; font-family: inherit; border: 1px solid #1A1410; }
-@keyframes showToast { to { opacity: 1; transform: translateY(0); } }
-@keyframes hideToast { to { opacity: 0; transform: translateY(-10px); } }
+/* トースト */
+#toast-container {
+    position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+    display: flex; flex-direction: column; gap: 10px; pointer-events: none;
+}
+@media (max-width: 720px) { #toast-container { left: 16px; right: 16px; bottom: 16px; } }
+.toast-msg {
+    background: var(--ink); color: var(--paper);
+    padding: 12px 18px; border-radius: 6px;
+    box-shadow: 0 10px 28px rgba(43,34,26,.2); font-size: .92rem;
+    opacity: 0; transform: translateY(12px);
+    animation: showToast .25s forwards, hideToast .25s forwards 2.5s;
+}
+@keyframes showToast { to { opacity: 1; transform: none; } }
+@keyframes hideToast { to { opacity: 0; transform: translateY(-8px); } }
 
-.text-alert { color: #9E4A34; font-weight: bold; }
-.btn-alert { color: #9E4A34; border-color: #9E4A34; background: #FFFFFF; }
-.btn-alert:hover { background-color: #FAF5F2; }
+.empty-state {
+    text-align: center; color: var(--ink-soft); padding: 24px 16px; font-size: .92rem;
+    border: 1.5px dashed #B9AFA1; border-radius: 6px; background: rgba(255,255,255,.6);
+    margin-bottom: 16px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    .card-task, .card-item-alert, .chat-bubble { transform: none !important; }
+}

@@ -93,11 +93,9 @@ function Home() {
   return (
     <div className="container">
       <header>
-        <div style={{ width: '80px' }}></div>
-        <div>家事可視化アプリ びじゅありん</div>
+        <span>家事可視化アプリ びじゅありん</span>
         <a
-          href='#'
-          style={{ width: '80px', textAlign: 'right' }}
+          href="#"
           onClick={(e) => {
             e.preventDefault()
             handleLogout()
@@ -109,9 +107,9 @@ function Home() {
 
       <div className="content">
         {isLoading ? (
-          <p>読み込み中...</p>
+          <div className="empty-state">読み込み中...</div>
         ) : errorMessage ? (
-          <p style={{ color: '#9E4A34' }}>{errorMessage}</p>
+          <div className="empty-state text-alert">{errorMessage}</div>
         ) : (
           <div className="dashboard-grid">
             <TaskColumn
@@ -143,8 +141,8 @@ function Home() {
               total={itemState.total}
               onPageChange={itemState.handlePageChange}
               onOpenDetail={openItemDetail}
-              onConsume={(itemId) => itemState.handleConsumeItem(itemId,closePanel)}
-              onRestock={(itemId) => itemState.handleRestockItem(itemId,closePanel)}
+              onConsume={(itemId) => itemState.handleConsumeItem(itemId, closePanel)}
+              onRestock={(itemId) => itemState.handleRestockItem(itemId, closePanel)}
               onOpenRegister={() => setOpenPanel('itemRegister')}
             />
 

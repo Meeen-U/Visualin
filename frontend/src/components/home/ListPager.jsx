@@ -14,7 +14,6 @@ function ListPager({ page, pageSize, total, onPageChange }) {
                 <button
                     type="button"
                     className="btn btn-secondary"
-                    style={{ padding: '4px 10px', fontSize: '0.8em', margin: 0 }}
                     disabled={!hasPrev}
                     onClick={() => onPageChange(page - 1)}
                 >
@@ -26,7 +25,6 @@ function ListPager({ page, pageSize, total, onPageChange }) {
                 <button
                     type="button"
                     className="btn btn-secondary"
-                    style={{ padding: '4px 10px', fontSize: '0.8em', margin: 0 }}
                     disabled={!hasNext}
                     onClick={() => onPageChange(page + 1)}
                 >

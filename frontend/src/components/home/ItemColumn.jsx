@@ -18,17 +18,19 @@ function ItemColumn({
     onOpenRegister,
 }) {
     const hasFilter = Boolean(categoryFilter || alertOnly)
-    const emptyMessage = !hasFilter && total === 0
-        ? 'まだ消耗品が登録されていません'
-        : alertOnly && !categoryFilter
-            ? '在庫アラートの消耗品はありません'
-            : '条件に一致する消耗品はありません'
+    const emptyMessage =
+        !hasFilter && total === 0
+            ? 'まだ消耗品が登録されていません 📝'
+            : alertOnly && !categoryFilter
+                ? '他に不足しているものはありません 🎉'
+                : '条件に一致する消耗品はありません'
 
     return (
-        <div className="dashboard-col">
+        <section className="dashboard-col">
             <div className="col-header">
-                <h2 className="col-title title-item">
-                    消耗品一覧 <span className="badge">{alertCount}</span>
+                <h2 className="col-title">
+                    <span className="title-item">消耗品一覧</span>
+                    <span className="badge">{alertCount}</span>
                 </h2>
                 <div className="filter-bar">
                     <select
@@ -55,42 +57,50 @@ function ItemColumn({
                 </div>
             </div>
 
-            {items.length === 0 ? (
-                 <p style={{ color: '#6E6055', fontSize: '0.9em' }}>
-                    {emptyMessage}
-                 </p>
-            ) : null}
+            {items.length === 0 ? <div className="empty-state">{emptyMessage}</div> : null}
 
             {items.map((item) => (
-                <div className={item.is_alert ? 'card-item-alert' : 'card-task'} key={item.item_id}>
-                    <div className="card-title">{item.name}</div>
-                    <div className={item.is_alert ? 'card-meta text-alert' : 'card-meta'}>
-                        {item.is_alert ? '残量目安を下回っています' : `残量: ${item.current_stock}`}
+                <div
+                    className={item.is_alert ? 'card-item-alert' : 'card-task is-item'}
+                    key={item.item_id}
+                >
+                    <div className="flex-between" style={{ marginBottom: '4px' }}>
+                        <p className="card-title" style={{ margin: 0 }}>
+                            {item.name}
+                        </p>
+                        {item.is_alert ? <span className="badge">要補充</span> : null}
                     </div>
-                    <div className="flex-between" style={{ marginTop: '20px', gap: '8px' }}>
+
+                    {item.category ? (
+                        <div className="card-tags">
+                            <span className="tag">{item.category}</span>
+                        </div>
+                    ) : null}
+
+                    <p className={item.is_alert ? 'card-meta text-alert' : 'card-meta'}>
+                        {item.is_alert
+                            ? `残り ${item.current_stock} ・ 残量目安を下回っています`
+                            : `残量: ${item.current_stock}`}
+                    </p>
+
+                    <div className="card-actions">
                         <button
+                            type="button"
                             className="btn btn-secondary"
-                            style={{ padding: '6px 12px', fontSize: '0.85em', margin: 0 }}
                             onClick={() => onOpenDetail(item)}
                         >
                             詳細・変更
                         </button>
                         <button
+                            type="button"
                             className="btn btn-secondary"
-                            style={{ padding: '6px 10px', fontSize: '0.85em', margin: 0 }}
                             onClick={() => onConsume(item.item_id)}
                         >
                             ➖ 1つ使う
                         </button>
                         <button
-                            className="btn"
-                            style={{
-                                backgroundColor: '#6E5447',
-                                padding: '6px 12px',
-                                fontSize: '0.85em',
-                                borderColor: '#40342B',
-                                margin: 0,
-                            }}
+                            type="button"
+                            className="btn btn-accent"
                             onClick={() => onRestock(item.item_id)}
                         >
                             購入完了
@@ -101,11 +111,16 @@ function ItemColumn({
 
             <ListPager page={page} pageSize={pageSize} total={total} onPageChange={onPageChange} />
 
-            <button className="btn btn-secondary" style={{ marginTop: '20px' }} onClick={onOpenRegister}>
-                消耗品を新規登録
+            <button
+                type="button"
+                className="btn btn-secondary"
+                style={{ marginTop: '18px' }}
+                onClick={onOpenRegister}
+            >
+                ＋ 消耗品を新規登録
             </button>
-        </div>
-  )
+        </section>
+    )
 }
 
 export default ItemColumn
