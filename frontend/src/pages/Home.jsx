@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiPost, clearToken } from '../api/client'
-import { useToast } from '../contexts/ToastContext'
-import { useConfirm } from '../contexts/ConfirmContext'
+import { useToast } from '../contexts/useToast'
+import { useConfirm } from '../contexts/useConfirm'
 import useTasks from '../hooks/useTasks'
 import useItems from '../hooks/useItems'
 import useAiChat from '../hooks/useAiChat'
@@ -38,21 +38,27 @@ function Home() {
     },
   })
 
+  const initialLoadersRef = useRef({
+    loadTasks: taskState.loadTasks,
+    loadItems: itemState.loadItems,
+  })
+
   useEffect(() => {
+    async function loadData() {
+      try {
+        await Promise.all([
+          initialLoadersRef.current.loadTasks(),
+          initialLoadersRef.current.loadItems(),
+        ])
+      } catch (err) {
+        setErrorMessage(err.message)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
     loadData()
   }, [])
-
-  async function loadData() {
-    setIsLoading(true)
-    setErrorMessage('')
-    try {
-      await Promise.all([taskState.loadTasks(), itemState.loadItems()])
-    } catch (err) {
-      setErrorMessage(err.message)
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   async function handleLogout() {
     try {

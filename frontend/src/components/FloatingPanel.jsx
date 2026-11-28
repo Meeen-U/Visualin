@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 let globalPanelZIndex = 1000
 
@@ -94,7 +94,6 @@ function FloatingPanelContent({ title, onClose, initialTop, initialLeft, childre
         document.addEventListener('mousemove', onMouseMove)
         document.addEventListener('mouseup', onMouseUp)
     }
-
     return (
         <div
             ref={panelRef}

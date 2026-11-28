@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import Header from '../components/Header'
 import { apiPost } from '../api/client'
-import { useToast } from '../contexts/ToastContext'
+import { useToast } from '../contexts/useToast'
 import { validateEmail } from '../utils/validation'
 
 function PasswordReset() {

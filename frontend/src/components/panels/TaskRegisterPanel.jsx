@@ -77,7 +77,9 @@ function TaskRegisterForm({ onSubmit, categoryOptions, initialValues }) {
 }
 
 function TaskRegisterPanel({ isOpen, onClose, onSubmit, categoryOptions = [], initialValues }) {
-    const formKey = `${initialValues?.title ?? ''}-${initialValues?.frequency_days ?? ''}`
+    const formKey = initialValues
+        ? `${initialValues.title ?? ''}-${initialValues.frequency_days ?? ''}-${initialValues.description ?? ''}`
+        : 'new'
 
     return (
         <FloatingPanel

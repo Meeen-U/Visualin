@@ -1,6 +1,5 @@
-import { createContext, useContext, useState, useCallback, useRef } from 'react'
-
-const ToastContext = createContext(null)
+import { useState, useCallback, useRef } from 'react'
+import { ToastContext } from './useToast'
 
 /**
  * アプリ全体をこのProviderで囲むことで、
@@ -32,17 +31,4 @@ export function ToastProvider({ children }) {
       </div>
     </ToastContext.Provider>
   )
-}
-
-/**
- * 各ページのコンポーネントでこのフックを呼ぶと、
- * showToast('メッセージ') が使えるようになる
- */
-// eslint-disable-next-line react-refresh/only-export-components
-export function useToast() {
-  const context = useContext(ToastContext)
-  if (!context) {
-    throw new Error('useToastはToastProviderの内側で使ってください')
-  }
-  return context
 }
