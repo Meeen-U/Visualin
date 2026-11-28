@@ -1,3 +1,5 @@
+import os
+from dotenv import load_dotenv
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -5,6 +7,8 @@ from fastapi.responses import JSONResponse
 from app.database import init_db
 from app import models
 from app.routers import auth, tasks, items, ai
+
+load_dotenv()
 
 # テーブルとインデックスがまだ存在しなければ作成する
 init_db()
@@ -40,10 +44,17 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         },
     )
 
+def _get_cors_origins() -> list[str]:
+    """環境変数 CORS_ORIGINS（カンマ区切り）から許可オリジン一覧を取得する"""
+    raw = os.getenv("CORS_ORIGINS", "http://localhost:5173")
+    origins = [origin.strip() for origin in raw.split(",") if origin.strip()]
+    return origins or ["http://localhost:5173"]
+
+
 # フロントエンドからのアクセスを許可する
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=_get_cors_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

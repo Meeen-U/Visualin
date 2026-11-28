@@ -1,0 +1,12 @@
+fastapi==0.165.0
+uvicorn==0.54.0
+SQLAlchemy==2.1.9
+pydantic==2.14.4
+email-validator==2.4.0
+python-dotenv==1.2.4
+python-jose[cryptography]==3.5.0
+passlib[bcrypt]==1.9.5
+bcrypt==5.0.0
+google-genai==3.6.1
+# PostgreSQL を本番DBに使う場合は以下を有効化
+# psycopg2-binary
