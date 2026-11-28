@@ -1,6 +1,6 @@
 from datetime import datetime
-from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from typing import Annotated, Optional
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -8,7 +8,11 @@ from app.models.user import User
 from app.models.item import Item, ItemHistory
 from app.pagination import paginate, paging_query
 from app.security import get_current_user
+from app.schemas.validators import CATEGORY_MAX_LENGTH, ENTITY_ID_MAX
 from app.schemas.item import (
+    ITEM_QUANTITY_MAX,
+    ITEM_QUANTITY_MIN,
+    ITEM_STOCK_MAX,
     ItemCreate,
     ItemUpdate,
     ItemResponse,
@@ -19,6 +23,8 @@ from app.schemas.item import (
     ItemStockUpdateResponse,
     ItemRestockResponse,
 )
+
+ItemIdPath = Annotated[int, Path(ge=1, le=ENTITY_ID_MAX, description="対象消耗品のID")]
 
 router = APIRouter(prefix="/api/items", tags=["日用品・消耗品管理"])
 
@@ -41,7 +47,11 @@ def get_items(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
     paging: tuple[int, int] = Depends(paging_query),
-    category: Optional[str] = Query(None, description="カテゴリで絞り込む（未指定なら全件）"),
+    category: Optional[str] = Query(
+        None,
+        max_length=CATEGORY_MAX_LENGTH,
+        description="カテゴリで絞り込む（未指定なら全件）",
+    ),
     is_alert: Optional[bool] = Query(
         None,
         description="在庫アラート状態で絞り込む（true: アラート品のみ, false: 通常品のみ, 未指定: 全件）",
@@ -51,8 +61,10 @@ def get_items(
     page, page_size = paging
     owned = db.query(Item).filter(Item.user_id == current_user.id)
     query = owned
-    if category:
-        query = query.filter(Item.category == category)
+    if category is not None:
+        category_stripped = category.strip()
+        if category_stripped:
+            query = query.filter(Item.category == category_stripped)
     if is_alert is True:
         query = query.filter(Item.is_alert)
     elif is_alert is False:
@@ -124,7 +136,7 @@ def _get_owned_item(item_id: int, current_user: User, db: Session) -> Item:
 
 @router.put("/{item_id}", response_model=ItemUpdateResponse)
 def update_item(
-    item_id: int,
+    item_id: ItemIdPath,
     item_in: ItemUpdate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -147,7 +159,7 @@ def update_item(
 
 @router.delete("/{item_id}", response_model=ItemDeleteResponse)
 def delete_item(
-    item_id: int,
+    item_id: ItemIdPath,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -160,8 +172,13 @@ def delete_item(
 
 @router.post("/{item_id}/consume", response_model=ItemStockUpdateResponse)
 def consume_item(
-    item_id: int,
-    quantity: int = 1,
+    item_id: ItemIdPath,
+    quantity: int = Query(
+        1,
+        ge=ITEM_QUANTITY_MIN,
+        le=ITEM_QUANTITY_MAX,
+        description="消費する数量（1以上）",
+    ),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -196,8 +213,13 @@ def consume_item(
 
 @router.post("/{item_id}/restock", response_model=ItemRestockResponse)
 def restock_item(
-    item_id: int,
-    restock_quantity: int,
+    item_id: ItemIdPath,
+    restock_quantity: int = Query(
+        ...,
+        ge=ITEM_QUANTITY_MIN,
+        le=ITEM_QUANTITY_MAX,
+        description="補充する数量（1以上）",
+    ),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -205,6 +227,12 @@ def restock_item(
     消耗品の購入完了を記録し、残量を補充する
     """
     item = _get_owned_item(item_id, current_user, db)
+
+    if item.current_stock + restock_quantity > ITEM_STOCK_MAX:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"在庫数の上限（{ITEM_STOCK_MAX}）を超えるため補充できません",
+        )
 
     item.current_stock += restock_quantity
 
