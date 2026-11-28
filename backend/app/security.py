@@ -10,14 +10,18 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.user import User
 
-# .encファイルの内容を読み込む
+# .envファイルの内容を読み込む
 load_dotenv()
 
 # パスワードハッシュ化の設定
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # JWTの設定
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = (os.getenv("SECRET_KEY") or "").strip()
+if not SECRET_KEY:
+    raise RuntimeError(
+        "環境変数 SECRET_KEY が設定されていません。backend/.env に SECRET_KEY を設定してください。"
+    )
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 1440))
 
@@ -29,7 +33,12 @@ def hash_password(password: str) -> str:
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """入力されたパスワードとハッシュ化済みパスワードを比較"""
-    return pwd_context.verify(plain_password, hashed_password)
+    if len(plain_password.encode("utf-8")) > 72:
+        return False
+    try:
+        return pwd_context.verify(plain_password, hashed_password)
+    except ValueError:
+        return False
 
 
 def create_access_token(data: dict) -> str:
@@ -48,33 +57,42 @@ def decode_access_token(token: str) -> dict | None:
         return payload
     except JWTError:
         return None
-    
+
+
 # クライアントが送るトークンを "Authorization: Bearer xxxx" の形式で受け取る設定
-security_scheme = HTTPBearer()
+# auto_error=False にすることで、未添付時も確実に 401 Unauthorized を返す
+security_scheme = HTTPBearer(auto_error=False)
 
 
 def get_current_user(
-        credentials: HTTPAuthorizationCredentials = Depends(security_scheme),
+        credentials: HTTPAuthorizationCredentials | None = Depends(security_scheme),
         db: Session = Depends(get_db)
 ) -> User:
-    token = credentials.credentials
-
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="認証情報が無効です",
         headers={"WWW-Authenticate": "Bearer"},
     )
 
+    if credentials is None or not credentials.credentials:
+        raise credentials_exception
+
+    token = credentials.credentials
     payload = decode_access_token(token)
     if payload is None:
         raise credentials_exception
-    
-    user_id = payload.get("sub")
-    if user_id is None:
+
+    raw_user_id = payload.get("sub")
+    if raw_user_id is None:
         raise credentials_exception
-    
-    user = db.query(User).filter(User.id == int(user_id)).first()
+
+    try:
+        user_id = int(raw_user_id)
+    except (ValueError, TypeError):
+        raise credentials_exception
+
+    user = db.query(User).filter(User.id == user_id).first()
     if user is None:
         raise credentials_exception
-    
+
     return user

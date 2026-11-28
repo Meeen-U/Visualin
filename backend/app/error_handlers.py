@@ -24,7 +24,9 @@ _FIELD_LABELS: dict[str, tuple[str, str]] = {
     "overdue_only": ("期限切れ絞り込み", ""),
     "is_alert": ("アラート絞り込み", ""),
     "password": ("パスワード", ""),
+    "password_confirm": ("確認用パスワード", ""),
     "new_password": ("新しいパスワード", ""),
+    "new_password_confirm": ("確認用の新しいパスワード", ""),
     "task_name": ("家事の名前", ""),
     "season": ("季節", ""),
     "living_environment": ("住環境", ""),
@@ -90,6 +92,12 @@ def _format_single_error(
     if err_type == "json_invalid":
         return "リクエストのJSON形式が正しくありません"
 
+    if err_type == "password_mismatch":
+        msg = err.get("msg")
+        if isinstance(msg, str) and msg.strip():
+            return msg.strip()
+        return "パスワードが一致しません"
+
     if source == "body" and field is None:
         return "リクエストボディを正しいJSON形式で送信してください"
 
@@ -129,6 +137,10 @@ def _format_single_error(
         if max_len is not None:
             return f"{label}は{max_len}文字以内で{action}"
         return f"{label}の文字数が上限を超えています"
+
+    if err_type == "password_too_long_bytes":
+        max_bytes = ctx.get("max_bytes", 72)
+        return f"{label}は{max_bytes}バイト以内（半角{max_bytes}文字以内）で{action}"
 
     if err_type == "string_type":
         return f"{label}は文字列で{action}"

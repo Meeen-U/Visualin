@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import Header from '../components/Header'
-import { apiPost, saveToken } from '../api/client'
+import { apiPost, saveToken, consumeAuthNotice } from '../api/client'
 import { validateEmail } from '../utils/validation'
 
 function Login() {
@@ -9,7 +9,7 @@ function Login() {
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [errorMessage, setErrorMessage] = useState('')
+  const [errorMessage, setErrorMessage] = useState(() => consumeAuthNotice())
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   async function handleLogin(e) {

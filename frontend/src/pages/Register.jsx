@@ -2,7 +2,13 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import Header from '../components/Header'
 import { apiPost, saveToken } from '../api/client'
-import { validateEmail } from '../utils/validation'
+import {
+  PASSWORD_MIN_LENGTH,
+  USERNAME_MAX_LENGTH,
+  validateEmail,
+  validatePassword,
+  validatePasswordConfirm,
+} from '../utils/validation'
 
 function Register() {
   const navigate = useNavigate()
@@ -18,8 +24,13 @@ function Register() {
     e.preventDefault()
     setErrorMessage('')
 
-    if (!name.trim()) {
+    const trimmedName = name.trim()
+    if (!trimmedName) {
       setErrorMessage('ユーザー名を入力してください')
+      return
+    }
+    if (trimmedName.length > USERNAME_MAX_LENGTH) {
+      setErrorMessage(`ユーザー名は${USERNAME_MAX_LENGTH}文字以内で入力してください`)
       return
     }
 
@@ -29,22 +40,25 @@ function Register() {
       return
     }
 
-    if (!password) {
-      setErrorMessage('パスワードを入力してください')
+    const passwordError = validatePassword(password)
+    if (passwordError) {
+      setErrorMessage(passwordError)
       return
     }
 
-    if (password !== passwordConfirm) {
-      setErrorMessage('パスワードが一致しません')
+    const confirmError = validatePasswordConfirm(password, passwordConfirm)
+    if (confirmError) {
+      setErrorMessage(confirmError)
       return
     }
 
     setIsSubmitting(true)
     try {
       const data = await apiPost('/api/auth/register', {
-        name: name.trim(),
+        name: trimmedName,
         email: email.trim(),
         password,
+        password_confirm: passwordConfirm,
       })
       saveToken(data.access_token)
       navigate('/register-complete')
@@ -68,6 +82,7 @@ function Register() {
               <input
                 type="text"
                 placeholder="例：タロウ"
+                maxLength={USERNAME_MAX_LENGTH}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
@@ -87,7 +102,8 @@ function Register() {
               <label>パスワード</label>
               <input
                 type="password"
-                placeholder="••••••••"
+                placeholder={`${PASSWORD_MIN_LENGTH}文字以上`}
+                minLength={PASSWORD_MIN_LENGTH}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -97,7 +113,8 @@ function Register() {
               <label>パスワード（確認用）</label>
               <input
                 type="password"
-                placeholder="••••••••"
+                placeholder="もう一度入力してください"
+                minLength={PASSWORD_MIN_LENGTH}
                 value={passwordConfirm}
                 onChange={(e) => setPasswordConfirm(e.target.value)}
                 required

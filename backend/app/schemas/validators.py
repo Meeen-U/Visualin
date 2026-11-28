@@ -4,6 +4,9 @@ from pydantic import AfterValidator, BeforeValidator, Field, StrictBool, StringC
 from pydantic_core import PydanticCustomError
 
 CATEGORY_MAX_LENGTH = 50
+USERNAME_MAX_LENGTH = 50
+PASSWORD_MIN_LENGTH = 8
+PASSWORD_MAX_BYTES = 72  # bcrypt の仕様上限
 ENTITY_ID_MAX = 2_147_483_647  # SQLite / PostgreSQL (INTEGER) 共通の32bit正整数上限
 
 
@@ -113,6 +116,24 @@ def bounded_int(*, ge: int, le: int):
     ]
 
 
+def _check_password_bytes(v: str) -> str:
+    """パスワードのUTF-8バイト数がbcryptの上限以内であることを検証する"""
+    if len(v.encode("utf-8")) > PASSWORD_MAX_BYTES:
+        raise PydanticCustomError(
+            "password_too_long_bytes",
+            "パスワードは{max_bytes}バイト以内で入力してください",
+            {"max_bytes": PASSWORD_MAX_BYTES},
+        )
+    return v
+
+
 OptionalCategoryStr = optional_single_line_str(CATEGORY_MAX_LENGTH)
 OptionalIsoDate = Annotated[Optional[date], BeforeValidator(_validate_optional_iso_date)]
 StrictBoolField = StrictBool
+UsernameStr = non_empty_single_line_str(USERNAME_MAX_LENGTH)
+PasswordStr = Annotated[
+    str,
+    StringConstraints(min_length=PASSWORD_MIN_LENGTH),
+    AfterValidator(_check_single_line_chars),
+    AfterValidator(_check_password_bytes),
+]

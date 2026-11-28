@@ -1,14 +1,12 @@
 import { Navigate } from 'react-router-dom'
-import { getToken } from '../api/client'
+import { hasValidToken } from '../api/client'
 
 /**
  * 認証が必要なページを守るためのラッパーコンポーネント
- * トークンが無い（未ログイン）場合はログイン画面へ強制的にリダイレクトする
+ * トークンが無い、または期限切れ・不正な場合はログイン画面へ強制的にリダイレクトする
  */
 function ProtectedRoute({ children }) {
-  const token = getToken()
-
-  if (!token) {
+  if (!hasValidToken()) {
     return <Navigate to="/login" replace />
   }
 
