@@ -1,18 +1,14 @@
 from datetime import date, datetime
-from typing import Annotated, Optional
-from pydantic import (
-    BaseModel,
-    BeforeValidator,
-    ConfigDict,
-    Field,
-    StringConstraints,
-    field_validator,
-)
+from typing import Optional
+from pydantic import BaseModel, ConfigDict, field_validator
 
 from app.schemas.validators import (
     OptionalCategoryStr,
-    empty_str_to_none,
-    reject_bool,
+    OptionalIsoDate,
+    StrictBoolField,
+    bounded_int,
+    non_empty_single_line_str,
+    optional_multiline_str,
     reject_explicit_null,
 )
 
@@ -21,31 +17,9 @@ TASK_DESCRIPTION_MAX_LENGTH = 1000
 TASK_FREQUENCY_MIN = 1
 TASK_FREQUENCY_MAX = 3650
 
-TaskTitleStr = Annotated[
-    str,
-    StringConstraints(
-        strip_whitespace=True,
-        min_length=1,
-        max_length=TASK_TITLE_MAX_LENGTH,
-    ),
-]
-OptionalTaskDescriptionStr = Annotated[
-    Optional[
-        Annotated[
-            str,
-            StringConstraints(
-                strip_whitespace=True,
-                max_length=TASK_DESCRIPTION_MAX_LENGTH,
-            ),
-        ]
-    ],
-    BeforeValidator(empty_str_to_none),
-]
-TaskFrequencyDays = Annotated[
-    int,
-    BeforeValidator(reject_bool),
-    Field(ge=TASK_FREQUENCY_MIN, le=TASK_FREQUENCY_MAX),
-]
+TaskTitleStr = non_empty_single_line_str(TASK_TITLE_MAX_LENGTH)
+OptionalTaskDescriptionStr = optional_multiline_str(TASK_DESCRIPTION_MAX_LENGTH)
+TaskFrequencyDays = bounded_int(ge=TASK_FREQUENCY_MIN, le=TASK_FREQUENCY_MAX)
 
 
 class TaskCreate(BaseModel):
@@ -53,7 +27,7 @@ class TaskCreate(BaseModel):
     title: TaskTitleStr
     description: OptionalTaskDescriptionStr = None
     frequency_days: TaskFrequencyDays
-    next_due_date: Optional[date] = None
+    next_due_date: OptionalIsoDate = None
     category: OptionalCategoryStr = None
 
 
@@ -62,9 +36,9 @@ class TaskUpdate(BaseModel):
     title: Optional[TaskTitleStr] = None
     description: OptionalTaskDescriptionStr = None
     frequency_days: Optional[TaskFrequencyDays] = None
-    next_due_date: Optional[date] = None
+    next_due_date: OptionalIsoDate = None
     category: OptionalCategoryStr = None
-    is_completed: Optional[bool] = None
+    is_completed: Optional[StrictBoolField] = None
 
     @field_validator("title", "frequency_days", "is_completed", mode="before")
     @classmethod

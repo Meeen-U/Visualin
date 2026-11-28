@@ -1,17 +1,11 @@
 from datetime import datetime
-from typing import Annotated, Optional
-from pydantic import (
-    BaseModel,
-    BeforeValidator,
-    ConfigDict,
-    Field,
-    StringConstraints,
-    field_validator,
-)
+from typing import Optional
+from pydantic import BaseModel, ConfigDict, field_validator
 
 from app.schemas.validators import (
     OptionalCategoryStr,
-    reject_bool,
+    bounded_int,
+    non_empty_single_line_str,
     reject_explicit_null,
 )
 
@@ -23,24 +17,9 @@ ITEM_QUANTITY_MAX = ITEM_STOCK_MAX
 ITEM_PURCHASE_CYCLE_MIN = 1
 ITEM_PURCHASE_CYCLE_MAX = 3650
 
-ItemNameStr = Annotated[
-    str,
-    StringConstraints(
-        strip_whitespace=True,
-        min_length=1,
-        max_length=ITEM_NAME_MAX_LENGTH,
-    ),
-]
-ItemStockInt = Annotated[
-    int,
-    BeforeValidator(reject_bool),
-    Field(ge=ITEM_STOCK_MIN, le=ITEM_STOCK_MAX),
-]
-ItemPurchaseCycleInt = Annotated[
-    int,
-    BeforeValidator(reject_bool),
-    Field(ge=ITEM_PURCHASE_CYCLE_MIN, le=ITEM_PURCHASE_CYCLE_MAX),
-]
+ItemNameStr = non_empty_single_line_str(ITEM_NAME_MAX_LENGTH)
+ItemStockInt = bounded_int(ge=ITEM_STOCK_MIN, le=ITEM_STOCK_MAX)
+ItemPurchaseCycleInt = bounded_int(ge=ITEM_PURCHASE_CYCLE_MIN, le=ITEM_PURCHASE_CYCLE_MAX)
 
 
 class ItemCreate(BaseModel):
@@ -78,7 +57,7 @@ class ItemResponse(BaseModel):
     category: Optional[str] = None
     is_alert: bool
 
-    
+
 class ItemListResponse(BaseModel):
     items: list[ItemResponse]
     total: int

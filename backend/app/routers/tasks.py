@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, date
-from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from typing import Annotated, Optional
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -8,6 +8,7 @@ from app.models.user import User
 from app.models.task import Task, TaskHistory
 from app.pagination import paginate, paging_query
 from app.security import get_current_user
+from app.schemas.validators import CATEGORY_MAX_LENGTH, ENTITY_ID_MAX, OptionalIsoDate
 from app.schemas.task import (
     TASK_FREQUENCY_MAX,
     TaskCreate,
@@ -19,6 +20,8 @@ from app.schemas.task import (
     TaskDeleteResponse,
     TaskCompleteResponse,
 )
+
+TaskIdPath = Annotated[int, Path(ge=1, le=ENTITY_ID_MAX, description="対象タスクのID")]
 
 router = APIRouter(prefix="/api/tasks", tags=["家事タスク管理"])
 
@@ -41,17 +44,21 @@ def get_tasks(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
     paging: tuple[int, int] = Depends(paging_query),
-    category: Optional[str] = Query(None, description="カテゴリで絞り込む（未指定なら全件）"),
+    category: Optional[str] = Query(
+        None,
+        max_length=CATEGORY_MAX_LENGTH,
+        description="カテゴリで絞り込む（未指定なら全件）",
+    ),
     due_within_days: Optional[int] = Query(
         None,
         ge=0,
         le=TASK_FREQUENCY_MAX,
         description="今日から指定日数以内に期限が来るタスク（期限切れ含む）に絞り込む",
     ),
-    due_before: Optional[date] = Query(
-        None,
-        description="指定日以前が次回予定日のタスクに絞り込む（YYYY-MM-DD）",
-    ),
+    due_before: Annotated[
+        OptionalIsoDate,
+        Query(description="指定日以前が次回予定日のタスクに絞り込む（YYYY-MM-DD）"),
+    ] = None,
     overdue_only: bool = Query(
         False,
         description="期限切れ（今日より前）のタスクのみに絞り込む",
@@ -65,8 +72,10 @@ def get_tasks(
     page, page_size = paging
     owned = db.query(Task).filter(Task.user_id == current_user.id)
     query = owned
-    if category:
-        query = query.filter(Task.category == category)
+    if category is not None:
+        category_stripped = category.strip()
+        if category_stripped:
+            query = query.filter(Task.category == category_stripped)
     if overdue_only:
         query = query.filter(
             Task.next_due_date.isnot(None),
@@ -149,7 +158,7 @@ def _get_owned_task(task_id: int, current_user: User, db: Session) -> Task:
 
 @router.put("/{task_id}", response_model=TaskUpdateResponse)
 def update_task(
-    task_id: int,
+    task_id: TaskIdPath,
     task_in: TaskUpdate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -172,7 +181,7 @@ def update_task(
 
 @router.delete("/{task_id}", response_model=TaskDeleteResponse)
 def delete_task(
-    task_id: int,
+    task_id: TaskIdPath,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -185,7 +194,7 @@ def delete_task(
 
 @router.post("/{task_id}/complete", response_model=TaskCompleteResponse)
 def complete_task(
-    task_id: int,
+    task_id: TaskIdPath,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
