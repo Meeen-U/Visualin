@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import ProtectedRoute from './components/ProtectedRoute'
+import PublicOnlyRoute from './components/PublicOnlyRoute'
 import Login from './pages/Login'
 import PasswordReset from './pages/PasswordReset'
 import Register from './pages/Register'
@@ -12,9 +13,23 @@ function App() {
       {/* ルート直下にアクセスされたらログイン画面へ */}
       <Route path="/" element={<Navigate to="/login" replace />} />
 
-      <Route path="/login" element={<Login />} />
+      <Route
+        path="/login"
+        element={
+          <PublicOnlyRoute>
+            <Login />
+          </PublicOnlyRoute>
+        }
+      />
       <Route path="/password-reset" element={<PasswordReset />} />
-      <Route path="/register" element={<Register />} />
+      <Route
+        path="/register"
+        element={
+          <PublicOnlyRoute>
+            <Register />
+          </PublicOnlyRoute>
+        }
+      />
       <Route path="/register-complete" element={<RegisterComplete />} />
 
       <Route

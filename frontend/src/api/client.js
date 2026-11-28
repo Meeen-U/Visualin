@@ -8,6 +8,8 @@ const API_BASE_URL = (
  * まずは localStorage を使う（保存し忘れ対策として最もシンプルな方法）
  */
 const TOKEN_KEY = 'visualin_access_token'
+const AUTH_NOTICE_KEY = 'visualin_auth_notice'
+let isRedirectingToLogin = false
 
 export function saveToken(token) {
   localStorage.setItem(TOKEN_KEY, token)
@@ -19,6 +21,90 @@ export function getToken() {
 
 export function clearToken() {
   localStorage.removeItem(TOKEN_KEY)
+}
+
+/**
+ * 期限切れ等で自動ログアウトされた際の通知メッセージを取り出す（1回限り）
+ */
+export function consumeAuthNotice() {
+  try {
+    const message = sessionStorage.getItem(AUTH_NOTICE_KEY)
+    if (message) {
+      sessionStorage.removeItem(AUTH_NOTICE_KEY)
+      return message
+    }
+  } catch {
+    // sessionStorage が利用できない環境では無視する
+  }
+  return ''
+}
+
+function saveAuthNotice(message) {
+  try {
+    sessionStorage.setItem(AUTH_NOTICE_KEY, message)
+  } catch {
+    // sessionStorage が利用できない環境では無視する
+  }
+}
+
+/**
+ * JWTのペイロード部分をデコードする（形式不正時は null を返す）
+ */
+function parseJwtPayload(token) {
+  if (typeof token !== 'string') return null
+  const parts = token.split('.')
+  if (parts.length !== 3 || !parts[1]) return null
+
+  try {
+    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/')
+    const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=')
+    const json = atob(padded)
+    const payload = JSON.parse(json)
+    return payload && typeof payload === 'object' ? payload : null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * 有効な（形式が正しく、期限切れでない）トークンを保持しているか判定する。
+ * 不正または期限切れのトークンが残っている場合は破棄する。
+ */
+export function hasValidToken() {
+  const token = getToken()
+  if (!token) return false
+
+  const payload = parseJwtPayload(token)
+  if (!payload) {
+    clearToken()
+    return false
+  }
+
+  if (typeof payload.exp === 'number' && payload.exp * 1000 <= Date.now()) {
+    clearToken()
+    return false
+  }
+
+  return true
+}
+
+function isLoginEndpoint(path) {
+  const normalizedPath = String(path || '').split('?')[0]
+  return normalizedPath === '/api/auth/login'
+}
+
+function handleUnauthorized() {
+  clearToken()
+  saveAuthNotice('セッションの有効期限が切れました。再度ログインしてください。')
+
+  if (
+    typeof window !== 'undefined' &&
+    window.location.pathname !== '/login' &&
+    !isRedirectingToLogin
+  ) {
+    isRedirectingToLogin = true
+    window.location.replace('/login')
+  }
 }
 
 /**
@@ -79,6 +165,9 @@ async function apiFetch(path, options = {}) {
   const data = await response.json().catch(() => null)
 
   if (!response.ok) {
+    if (response.status === 401 && !isLoginEndpoint(path)) {
+      handleUnauthorized()
+    }
     const message = extractErrorMessage(data, response.status)
     throw new Error(message)
   }
