@@ -9,6 +9,9 @@ from app.models.item import Item, ItemHistory
 from app.pagination import paginate, paging_query
 from app.security import get_current_user
 from app.schemas.item import (
+    ITEM_QUANTITY_MAX,
+    ITEM_QUANTITY_MIN,
+    ITEM_STOCK_MAX,
     ItemCreate,
     ItemUpdate,
     ItemResponse,
@@ -161,7 +164,12 @@ def delete_item(
 @router.post("/{item_id}/consume", response_model=ItemStockUpdateResponse)
 def consume_item(
     item_id: int,
-    quantity: int = 1,
+    quantity: int = Query(
+        1,
+        ge=ITEM_QUANTITY_MIN,
+        le=ITEM_QUANTITY_MAX,
+        description="消費する数量（1以上）",
+    ),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -197,7 +205,12 @@ def consume_item(
 @router.post("/{item_id}/restock", response_model=ItemRestockResponse)
 def restock_item(
     item_id: int,
-    restock_quantity: int,
+    restock_quantity: int = Query(
+        ...,
+        ge=ITEM_QUANTITY_MIN,
+        le=ITEM_QUANTITY_MAX,
+        description="補充する数量（1以上）",
+    ),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -205,6 +218,12 @@ def restock_item(
     消耗品の購入完了を記録し、残量を補充する
     """
     item = _get_owned_item(item_id, current_user, db)
+
+    if item.current_stock + restock_quantity > ITEM_STOCK_MAX:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"在庫数の上限（{ITEM_STOCK_MAX}）を超えるため補充できません",
+        )
 
     item.current_stock += restock_quantity
 

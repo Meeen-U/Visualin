@@ -9,6 +9,7 @@ from app.models.task import Task, TaskHistory
 from app.pagination import paginate, paging_query
 from app.security import get_current_user
 from app.schemas.task import (
+    TASK_FREQUENCY_MAX,
     TaskCreate,
     TaskUpdate,
     TaskResponse,
@@ -44,6 +45,7 @@ def get_tasks(
     due_within_days: Optional[int] = Query(
         None,
         ge=0,
+        le=TASK_FREQUENCY_MAX,
         description="今日から指定日数以内に期限が来るタスク（期限切れ含む）に絞り込む",
     ),
     due_before: Optional[date] = Query(
